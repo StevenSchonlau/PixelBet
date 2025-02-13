@@ -31,13 +31,7 @@ def close_db():
     _cursor.close()
     _cnx.close()
 
-#example create:
-# add_user = ("INSERT INTO test "
-#             "(userId, username) "
-#             "VALUES (%s, %s)")
-# test_employee = ('54321', 'joe')
-# cursor.execute(add_user, test_employee)
-
+#cols are for column names, vals are corresponding values
 def create(cols, vals, table):
     connect_db()
     add_entry = "INSERT INTO " + table + " ("
@@ -52,13 +46,7 @@ def create(cols, vals, table):
         close_db()
         return False
 
-#example read:
-# query = ("SELECT * FROM test")
-# cursor.execute(query)
-# for (userId, username) in cursor:
-#   print("{}, {} in database".format(
-#     userId, username))
-
+#cols are for column names, vals are corresponding values. If none specified, will return whole table
 def read(table, cols=[], vals=[]):
     connect_db()
     read_entry = "SELECT * FROM " + table 
@@ -69,17 +57,14 @@ def read(table, cols=[], vals=[]):
             combined_arr.append(cols[c] + "='" + vals[c] + "'")
         read_entry += " AND ".join(combined_arr)
     try:
-        _cursor.execute(read_entry)
+        data = _cursor.execute(read_entry)
         close_db()
-        return True
+        return data
     except:
         close_db()
-        return False
+        return None
 
-#example update:
-# query = ("UPDATE test SET userId='987' WHERE username='joe'")
-# cursor.execute(query)
-
+#updates entries with wcols/wvals criteria to cols/vals
 def update(table, cols, vals, wcols, wvals):
     connect_db()
     update_entry = "UPDATE " + table + " SET "
@@ -102,10 +87,7 @@ def update(table, cols, vals, wcols, wvals):
         return False
 
 
-#example delete:
-# query = ("DELETE FROM test WHERE username='joe'")
-# cursor.execute(query)
-
+#deletes entries matching cols/vals
 def delete(table, cols, vals):
     connect_db()
     delete_entry = "DELETE FROM " + table 

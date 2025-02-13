@@ -1,10 +1,13 @@
 import pygame
 import os
-from . import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from pygame.locals import *
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+print(pygame.display.Info())
 pygame.display.set_caption("PixelBet")
-icon_path = os.path.join("assets\images", "pixelbet_logo.jpeg")  # Update path if needed
+print("FILE", __file__)
+icon_path = os.path.join('assets\\images', "pixelbet_logo.jpeg")  # Update path if needed
 print(icon_path)
 if os.path.exists(icon_path):
     icon = pygame.image.load(icon_path)
