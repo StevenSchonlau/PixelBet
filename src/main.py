@@ -7,13 +7,14 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 print(pygame.display.Info())
 pygame.display.set_caption("PixelBet")
 print("FILE", __file__)
-icon_path = os.path.join('assets\\images', "pixelbet_logo.jpeg")  # Update path if needed
+icon_path = os.path.join('assets/images', "pixelbet_logo.jpeg")
 print(icon_path)
 if os.path.exists(icon_path):
     icon = pygame.image.load(icon_path)
     pygame.display.set_icon(icon)
 else:
     print("Warning: Icon file not found!")
+
 
 def main():
     clock = pygame.time.Clock()
@@ -29,6 +30,7 @@ def main():
         pygame.display.flip()
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
