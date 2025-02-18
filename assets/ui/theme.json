@@ -1,0 +1,49 @@
+{
+    "font_paths": {
+        "pixel_font": "assets/fonts/PixelEmulator-xq08.ttf"
+    },
+    "defaults": {
+        "font": "pixel_font",
+        "font_size": 24
+    },
+    "button": {
+        "font": {
+            "name": "pixel_font",
+            "size": "20",
+            "bold": "0",
+            "italic": "0",
+            "regular_path": "assets/fonts/PixelEmulator-xq08.ttf"
+        },
+        "colours": {
+            "normal_bg": "#444444",
+            "hovered_bg": "#555555",
+            "disabled_bg": "#222222",
+            "selected_bg": "#333333",
+            "active_bg": "#666666",
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFF00",
+            "disabled_text": "#888888",
+            "selected_text": "#FFFFFF",
+            "active_text": "#FFFFFF",
+            "normal_border": "#AAAAAA",
+            "hovered_border": "#B0B0B0",
+            "disabled_border": "#808080",
+            "selected_border": "#8080B0",
+            "active_border": "#8080B0"
+        },
+        "misc": {
+            "border_width": "2",
+            "border_color": "#FFFFFF",
+            "shape": "rectangle"
+        }
+    },
+    "label": {
+        "font": {
+            "name": "pixel_font",
+            "size": "24"
+        },
+        "colours": {
+            "text": "#FFFFFF"
+        }
+    }
+}
