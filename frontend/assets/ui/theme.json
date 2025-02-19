@@ -1,6 +1,6 @@
 {
     "font_paths": {
-        "pixel_font": "assets/fonts/PixelEmulator-xq08.ttf"
+        "pixel_font": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
     },
     "defaults": {
         "font": "pixel_font",
@@ -12,7 +12,7 @@
             "size": "20",
             "bold": "0",
             "italic": "0",
-            "regular_path": "assets/fonts/PixelEmulator-xq08.ttf"
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
         },
         "colours": {
             "normal_bg": "#444444",
