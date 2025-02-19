@@ -4,6 +4,7 @@ import os
 from pygame.locals import *
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, THEME_PATH
 from home import draw_home_screen
+from game import draw_game_screen
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -15,30 +16,34 @@ if os.path.exists(icon_path):
 else:
     print("Warning: Icon file not found!")
 
+background = pygame.Surface((800, 600))
+background.fill(pygame.Color('#000000'))
+
 ui_manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), THEME_PATH)
 
-ui_manager.clear_and_reset()
+current_screen = "home"
+selected_game = None
 
 def main():
+    global current_screen, selected_game
     clock = pygame.time.Clock()
     running = True
 
     while running:
         time_delta = clock.tick(FPS) / 1000.0  # pygame_gui needs delta time
-        events = pygame.event.get()  # Collect all events
-        
+        events = pygame.event.get()  # Collect all events 
+        if current_screen == "home":
+            current_screen, selected_game = draw_home_screen(screen, events, ui_manager)
+        elif current_screen == "game":
+            current_screen = draw_game_screen(screen, events, ui_manager, selected_game)
+            
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
-            
-            # Let pygame_gui process events
             ui_manager.process_events(event)
 
-        screen.fill(BLACK)  # Clear screen
-        draw_home_screen(screen, events, ui_manager)  # Pass events and ui_manager
         ui_manager.update(time_delta)  # Update pygame_gui
         ui_manager.draw_ui(screen)  # Draw UI elements
-        
         pygame.display.flip()
 
 
