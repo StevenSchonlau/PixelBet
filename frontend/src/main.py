@@ -40,11 +40,9 @@ def main():
         if get_user() is not None:
             draw_home_screen(screen, events, ui_manager)  # Pass events and ui_manager
         else:
-            print(get_back_to_login())
             if not get_sign_up():
                 if get_back_to_login(): #reset when back at login
                     set_back_to_login(False)
-                #print("login screen")
                 if intialized != "login":
                     initialize_login(ui_manager)
                     intialized = "login"
@@ -52,7 +50,6 @@ def main():
             else:
                 if get_back_to_login():
                     set_sign_up(False)
-                #print("signup screen")
                 if intialized != "signup":
                     initialize_signup(ui_manager)
                     intialized = "signup"

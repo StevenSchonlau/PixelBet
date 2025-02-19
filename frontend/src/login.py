@@ -15,6 +15,9 @@ user = None
 def get_user():
     return user
 
+#failed login
+error_message = ""
+
 signup_screen = False
 def get_sign_up():
     return signup_screen
@@ -22,34 +25,36 @@ def set_sign_up(val):
     global signup_screen
     signup_screen = val
 
-def register_server(username, password):
-    response = requests.post(f"{BASE_URL}/register", json={"username": username, "password": password})
-    print(response.json())
-
 def login_server(username, password):
+    print("true", username, password)
     response = requests.post(f"{BASE_URL}/login", json={"username": username, "password": password})
     print(response.json())
-
-def get_user_server(username):
-    response = requests.get(f"{BASE_URL}/get-user", json={"username": username})
-    print(response.json())
-    print(Profile(**json.loads(str(response.json()).replace("\'","\""))).id)
+    return response
 
 def attempt_login(username, password):
+    global error_message
     if username == "":
+        error_message = "Username cannot be blank"
         return None
     if password == "":
+        error_message = "Password cannot be blank"
         return None
-    print(username, password)
-    if username == "test" and password == "password":
-        print("returned")
-        return Profile("test", -1)
+    if username == "test" and password == "password": #bypass
+        print("bypass server")
+        error_message = ""
+        return "00000000-0000-0000-0000-000000000000"
+    else:
+        response = login_server(username, password)
+        if "denied" in str(response.json()):
+            error_message = "Incorrect credentials"
+        return response.json()['user_id']
 
 #global vars for buttons
 login_btn = None
 username_field = None
 password_field = None
 sign_up_screen_btn = None
+
 
 #initialize buttons
 def initialize_login(ui_manager):
@@ -66,13 +71,15 @@ def initialize_login(ui_manager):
     username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 3), (SCREEN_WIDTH // 2,50)),
         manager=ui_manager,
-        object_id="username"
+        object_id="username",
+        placeholder_text="username"
     )
     global password_field
     password_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 4), (SCREEN_WIDTH // 2,50)),
         manager=ui_manager,
-        object_id="password"
+        object_id="password",
+        placeholder_text="password"
     )
     global sign_up_screen_btn 
     sign_up_screen_btn = pygame_gui.elements.UIButton(
@@ -87,7 +94,10 @@ def draw_login_screen(screen, events, ui_manager):
     title_text = FONT.render("Login", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
-    
+    global error_message
+    fail_text = FONT.render(error_message, True, WHITE)
+    screen.blit(fail_text, (SCREEN_WIDTH // 2 - fail_text.get_width() // 2, SCREEN_HEIGHT // 8 * 7))
+
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
