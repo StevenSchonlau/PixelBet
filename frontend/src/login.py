@@ -47,6 +47,7 @@ def attempt_login(username, password):
         response = login_server(username, password)
         if "denied" in str(response.json()):
             error_message = "Incorrect credentials"
+            return None
         return response.json()['user_id']
 
 #global vars for buttons
@@ -105,6 +106,7 @@ def draw_login_screen(screen, events, ui_manager):
             if event.ui_element == login_btn:
                 print("login", username_field.get_text(), password_field.get_text())
                 global user
+                error_message = "Loading..."
                 user = attempt_login(username_field.get_text(), password_field.get_text())
                 print(user)
             if event.ui_element == sign_up_screen_btn:

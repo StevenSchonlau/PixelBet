@@ -22,7 +22,17 @@ def get_back_to_login():
     return back_to_login
 def set_back_to_login(val):
     global back_to_login
+    global error_message
+    error_message = ""
     back_to_login = val
+
+confirming = False
+def get_confirming():
+    global confirming
+    return confirming
+def set_confirming(val):
+    global confirming
+    confirming = val
 
 error_message = ""
 
@@ -30,6 +40,8 @@ error_message = ""
 def register_server(username, password, email):
     response = requests.post(f"{BASE_URL}/register", json={"username": username, "password": password, "email": email})
     return response
+
+    
 
 #global vars for buttons
 username_field = None
@@ -95,6 +107,14 @@ def draw_signup_screen(screen, events, ui_manager):
                 global back_to_login
                 back_to_login = True
             if event.ui_element == sign_up_btn:
+                error_message = "Loading..."
+                screen.fill(BLACK)
+                error_message_text = FONT.render(error_message, True, WHITE)
+                screen.blit(error_message_text, (SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 7))
+                ui_manager.update(1 / 60)
+                ui_manager.draw_ui(screen)
+
+                pygame.display.flip() 
                 response = register_server(username_field.get_text(), password_field.get_text(), email_field.get_text())
                 if "invalid" in str(response.json()):
                     if username_field.get_text() == "":
@@ -108,6 +128,11 @@ def draw_signup_screen(screen, events, ui_manager):
                 elif "duplicate" in str(response.json()):
                     error_message = "Duplicate user information!"
                 else:
+                    data = response.json()
+                    global user
+                    user = data.get("id")
+                    global confirming
+                    confirming = True
                     error_message = "Success! Go back to login"
                     
                     
