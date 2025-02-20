@@ -13,7 +13,8 @@ BLUE = (0, 0, 255)
 BUTTON_COLOR = (200, 200, 200)
 HOVER_COLOR = (170, 170, 170)
 
-THEME_PATH = "assets/ui/theme.json"
+THEME_PATH = "frontend/assets/ui/theme.json"
 
-FONT_PATH = "assets/fonts/PixelEmulator-xq08.ttf"
+FONT_PATH = "frontend/assets/fonts/PixelEmulator-xq08.ttf"
 FONT = pygame.font.Font(FONT_PATH, 24)
+SERVER_URL="http://localhost:5000/"
