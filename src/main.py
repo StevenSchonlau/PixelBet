@@ -2,6 +2,9 @@ import pygame
 import os
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from pygame.locals import *
+import profile_view
+
+pygame.font.init()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 print(pygame.display.Info())
@@ -15,6 +18,8 @@ if os.path.exists(icon_path):
 else:
     print("Warning: Icon file not found!")
 
+font = pygame.font.SysFont('Arial', 30)
+
 
 def main():
     clock = pygame.time.Clock()
@@ -27,6 +32,9 @@ def main():
                 running = False
 
         screen.fill((0, 0, 0))  # Clear screen
+
+        profile_view.draw_menu(screen)
+
         pygame.display.flip()
 
     pygame.quit()
