@@ -3,7 +3,7 @@ import requests
 from constants import SERVER_URL
 from profile import Profile
 import json
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
+from constants import *
 import pygame
 import pygame_gui
 from user_session import UserSession
@@ -112,7 +112,7 @@ def initialize_login(ui_manager):
     )
 
 def draw_login_screen(screen, events, ui_manager):
-    screen.fill(BLACK)
+    draw_background(screen)
     title_text = FONT.render("Login", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
@@ -128,7 +128,7 @@ def draw_login_screen(screen, events, ui_manager):
                 print("login", username_field.get_text(), password_field.get_text())
                 global user
                 error_message = "Loading..."
-                screen.fill(BLACK)
+                draw_background(screen)
                 title_text = FONT.render("Login", True, WHITE)
                 screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
                 error_message_text = FONT.render(error_message, True, WHITE)

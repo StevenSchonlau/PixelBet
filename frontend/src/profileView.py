@@ -161,7 +161,7 @@ def get_center(text):
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
     global active_sprite, active_index
-    screen.fill(BLACK)
+    draw_background(screen)
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
