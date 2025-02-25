@@ -104,11 +104,14 @@ def draw_signup_screen(screen, events, ui_manager):
             print(event.ui_element)
             if event.ui_element == back_to_login_btn:
                 print("back")
+                error_message = ""
                 global back_to_login
                 back_to_login = True
             if event.ui_element == sign_up_btn:
                 error_message = "Loading..."
-                screen.fill(BLACK)
+                screen.fill(BLACK) #to cover last error message
+                title_text = FONT.render("Sign Up", True, WHITE)
+                screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
                 error_message_text = FONT.render(error_message, True, WHITE)
                 screen.blit(error_message_text, (SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 7))
                 ui_manager.update(1 / 60)
