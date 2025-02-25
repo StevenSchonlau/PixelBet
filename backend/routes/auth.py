@@ -34,7 +34,19 @@ def send_email_route(uuidUser, username, to_email="7808steven@gmail.com"):
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Error handling
 
+def send_email_password_reset(uuidUser, username, to_email="7808steven@gmail.com"):
+    if not to_email:
+        return jsonify({"error": "Email is required"}), 400  # Return error if email is missing
 
+    subject = "Hello " + username + "!"
+    message = "Reset your password here: " + os.getenv("SERVER_URL") + "password_reset/" + uuidUser + " to confirm your email."
+
+    try:
+        send_email(to_email, subject, message)  # Call the send_email function
+        print('sent email')
+        return jsonify({"message": "Email sent successfully!"}), 200  # Success response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Error handling
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -124,4 +136,57 @@ def confirm_email(user_uuid):
     
     return render_template("confirmation.html", message="Invalid confirmation link. Check your email if a more recent link was sent.")
 
-    #return redirect(url_for('home'))  # Redirect to home or another page
+
+@auth_bp.route('/password_reset/<uuid:user_uuid>', methods=['POST'])
+def password_reset_post_confirm(user_uuid):
+    if request.is_json:
+        print(request)
+        new_password = request.json.get('password')
+    else:
+        print("2", request.form)
+        new_password = request.form.get('password')
+    user = User.query.filter_by(uuid_user=str(user_uuid)).first()
+    
+    hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    user.password = hashed_password
+    db.session.commit()
+    send_email("7808steven@gmail.com", "Password Reset", "Hello! You are receiving this email because you recently reset your password.") #temporary value of my email
+    return render_template("confirmation.html", message="Successfully reset password!")
+
+@auth_bp.route('/password_reset/<uuid:user_uuid>', methods=['GET'])
+def password_reset_get(user_uuid):
+    user = User.query.filter_by(uuid_user=str(user_uuid)).first()
+    
+    if user:
+        if user.email_confirmed:
+            # Mark the email as confirmed
+            if (datetime.utcnow() - user.sent_time_stamp).seconds > 600:
+                message = "Expired link!"
+            else:
+                print("success")
+                message = "Hello " + user.username + "!"
+                return render_template("passwordReset.html", message = message)
+        else:
+            message = "Your email is not verified"
+
+        return render_template("confirmation.html", message=message)
+    
+    return render_template("confirmation.html", message="Invalid confirmation link. Check your email if a more recent link was sent.")
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def password_reset_post():
+    data = request.json
+    if data['email'] == "":
+        return jsonify({'message': 'invalid'})
+    elif "@" not in data['email'] or "." not in data['email']:
+        return jsonify({'message': 'invalid'})
+    try:
+        user = User.query.filter_by(email=str(data['email'])).first()
+        print(user)
+        if not user.email_confirmed:
+            return jsonify({'message': 'Not Confirmed'})
+        send_email_password_reset(user.uuid_user, user.username)
+        return jsonify({'message': 'Email Sent'})
+    except:
+        return jsonify({'message': 'Non-Existent'})

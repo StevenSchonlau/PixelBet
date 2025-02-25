@@ -25,6 +25,13 @@ def set_sign_up(val):
     global signup_screen
     signup_screen = val
 
+password_reset_screen = False
+def get_password_reset():
+    return password_reset_screen
+def set_password_reset(val):
+    global password_reset_screen
+    password_reset_screen = val
+
 def login_server(username, password):
     print("true", username, password)
     response = requests.post(f"{BASE_URL}/login", json={"username": username, "password": password})
@@ -55,6 +62,8 @@ login_btn = None
 username_field = None
 password_field = None
 sign_up_screen_btn = None
+reset_password_btn = None
+
 
 
 #initialize buttons
@@ -89,6 +98,13 @@ def initialize_login(ui_manager):
         manager=ui_manager,
         object_id="sign_up_screen",
     )
+    global reset_password_btn 
+    reset_password_btn = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 7), (SCREEN_WIDTH // 2,50)),
+        text="Reset Password",
+        manager=ui_manager,
+        object_id="password_reset",
+    )
 
 def draw_login_screen(screen, events, ui_manager):
     screen.fill(BLACK)
@@ -97,7 +113,7 @@ def draw_login_screen(screen, events, ui_manager):
 
     global error_message
     fail_text = FONT.render(error_message, True, WHITE)
-    screen.blit(fail_text, (SCREEN_WIDTH // 2 - fail_text.get_width() // 2, SCREEN_HEIGHT // 8 * 7))
+    screen.blit(fail_text, (SCREEN_WIDTH // 2 - fail_text.get_width() // 2, SCREEN_HEIGHT // 8 * 2))
 
 
     for event in events:
@@ -107,12 +123,27 @@ def draw_login_screen(screen, events, ui_manager):
                 print("login", username_field.get_text(), password_field.get_text())
                 global user
                 error_message = "Loading..."
+                screen.fill(BLACK)
+                title_text = FONT.render("Login", True, WHITE)
+                screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+                error_message_text = FONT.render(error_message, True, WHITE)
+                screen.blit(error_message_text, (SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 2))
+                ui_manager.update(1 / 60)
+                ui_manager.draw_ui(screen)
+
+                pygame.display.flip() 
                 user = attempt_login(username_field.get_text(), password_field.get_text())
                 print(user)
             if event.ui_element == sign_up_screen_btn:
                 print("signup")
                 global signup_screen
                 signup_screen = True
+                error_message = ""
+            if event.ui_element == reset_password_btn:
+                print("reset password")
+                global password_reset_screen
+                password_reset_screen = True
+                error_message = ""
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
