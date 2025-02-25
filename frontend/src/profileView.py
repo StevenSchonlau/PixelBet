@@ -8,6 +8,7 @@ from user_session import UserSession
 
 BASEURL = SERVER_URL
 
+
 def get_profile():
     session = UserSession()
     current_user = session.get_user()
@@ -17,6 +18,24 @@ def get_profile():
         print(response.json())
     else:
         print(f"Error: {response.status_code}, {response.text}")
+    
+    return response.json()
+
+
+def save_profile():
+    global username
+    session = UserSession()
+    current_user = session.get_user()
+    data = {
+        "username": username,
+        "avatar": all_sprites[active_index].name
+    }
+
+    response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
+    if response.status_code == 200:
+        print("Profile updated:", response.json())
+    else:
+        print("Error:", response.status_code, response.json())
 
 
 def load_sprites(sheet, num_frames, row=0, scale=2):
@@ -28,6 +47,7 @@ def load_sprites(sheet, num_frames, row=0, scale=2):
         scaled_frame = pygame.transform.scale(frame, (frame_width * scale, frame_height * scale))
         frames.append(scaled_frame)
     return frames
+
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, x=60, y=0, name="", sprite_sheet=None):
@@ -51,17 +71,29 @@ class Sprite(pygame.sprite.Sprite):
 all_sprites = {}
 active_sprite = None
 active_index = 0
+username = ""
+avatar = ""
+
 
 def init_profile_view(ui_manager):
-    global all_sprites, active_sprite
+    global all_sprites, active_sprite, avatar, username
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
         Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
     ]
-    get_profile()
-    active_sprite = all_sprites[0]
+    user = get_profile()
+    avatar = user["avatar"]
+    username = user["username"]
+    if avatar:
+        for sprite in all_sprites:
+            if sprite.name == avatar:
+                active_sprite = sprite
+    else:
+        active_sprite = all_sprites[0]
+
     ui_manager.clear_and_reset()
+
 
 def draw_view_profile_button(screen, ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
@@ -77,6 +109,7 @@ def draw_view_profile_button(screen, ui_manager):
         object_id="ViewProfileButton",
     )
 
+
 def draw_button(text, ui_manager, x, y):
     text_surface = FONT.render(text, True, WHITE)
     button_width = text_surface.get_width() + 40
@@ -88,13 +121,22 @@ def draw_button(text, ui_manager, x, y):
         manager=ui_manager,
     )
 
+
+def get_center(text):
+    text_surface = FONT.render(text, True, WHITE)
+    button_width = text_surface.get_width() + 40
+    button_x = (SCREEN_WIDTH - button_width) // 2
+    return button_x
+
+
 def draw_view_profile(screen, events, ui_manager, selected_game):
     global active_sprite, active_index
     screen.fill(BLACK)
 
-    button = draw_button("Back", ui_manager, 0, 0)
-    button = draw_button("<", ui_manager, 0, 200)
-    button = draw_button(">", ui_manager, 300, 200)
+    draw_button("Back", ui_manager, 0, 0)
+    draw_button("<", ui_manager, 0, 200)
+    draw_button(">", ui_manager, 300, 200)
+    draw_button("save", ui_manager, get_center("save"), 500)
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -109,6 +151,8 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
             elif text == ">" and active_sprite:
                 active_index += 1
                 active_sprite = all_sprites[active_index % len(all_sprites)]
+            elif text == "save":
+                save_profile()
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
