@@ -67,27 +67,27 @@ def main():
                         set_back_to_login(False)
                         set_confirming(False)
                         set_password_reset(False)
-                    if intialized != "login":
+                    if initialized != "login":
                         initialize_login(ui_manager)
-                        intialized = "login"
+                        initialized = "login"
                     draw_login_screen(screen, events, ui_manager)
                 else:
                     if get_back_to_login():
                         set_sign_up(False)
                     if get_confirming():
-                        if intialized != "confirming":
+                        if initialized != "confirming":
                             initialize_confirming(ui_manager)
-                            intialized = "confirming"
+                            initialized = "confirming"
                         draw_confirming_screen(screen, events, ui_manager)
                     else: 
-                        if intialized != "signup":
+                        if initialized != "signup":
                             initialize_signup(ui_manager)
-                            intialized = "signup"
+                            initialized = "signup"
                         draw_signup_screen(screen, events, ui_manager)
             else: #password reset
-                if intialized != "password_reset":
+                if initialized != "password_reset":
                     initialize_password_reset(ui_manager)
-                    intialized = "password_reset"
+                    initialized = "password_reset"
                 draw_password_reset_screen(screen, events, ui_manager)
 
         ui_manager.update(time_delta)  # Update pygame_gui
