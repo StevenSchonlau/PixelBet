@@ -3,7 +3,8 @@ import pygame_gui
 import os
 from pygame.locals import *
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, THEME_PATH
-from home import draw_home_screen
+from home import draw_home_screen, initialize_home
+from game import draw_game_screen, initialize_game
 from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset
 from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
 from confirmEmail import initialize_confirming, draw_confirming_screen
@@ -21,8 +22,11 @@ else:
 
 ui_manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), THEME_PATH)
 ui_manager.clear_and_reset()
-intialized = "None"
+initialized = "None"
+current_screen = "login"
+selected_game = None
 def main():
+    global initialized, current_screen, selected_game
     clock = pygame.time.Clock()
     running = True
 
@@ -38,9 +42,24 @@ def main():
             ui_manager.process_events(event)
 
         screen.fill(BLACK)  # Clear screen
-        global intialized
+        
         if get_user() is not None:
-            draw_home_screen(screen, events, ui_manager)  # Pass events and ui_manager
+            if selected_game is None:  # Home screen logic
+                if initialized != "home":
+                    initialize_home(ui_manager)
+                    initialized = "home"
+                selected_game = draw_home_screen(screen, events, ui_manager)  # If a game is selected, it will return a value
+
+            else:  # A game is selected, display game screen
+                if initialized != "game":
+                    initialize_game(ui_manager)
+                    initialized = "game"
+                game_result = draw_game_screen(screen, events, ui_manager, selected_game)
+
+                if game_result is None:  # If "Back" is pressed in game, return to home
+                    selected_game = None
+                    initialize_home(ui_manager)
+                    initialized = "home"
         else:
             if not get_password_reset():
                 if not get_sign_up():

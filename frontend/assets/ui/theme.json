@@ -6,6 +6,47 @@
         "font": "pixel_font",
         "font_size": 24
     },
+    "label": {
+        "colours": {
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFF99",
+            "selected_text": "#FFD700"
+        },
+        "font": {
+            "name": "pixel_font",
+            "size": "10",
+            "bold": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
+        }
+    },
+    
+    "timer_label": {
+        "colours": {
+            "normal_text": "#FFD700",
+            "hovered_text": "#FFA500",
+            "selected_text": "#FF4500"
+        },
+        "font": {
+            "name": "pixel_font",
+            "size": "20",
+            "bold": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
+        }
+    },
+    
+    "horse_name_label": {
+        "colours": {
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#CCCCCC",
+            "selected_text": "#FFD700"
+        },
+        "font": {
+            "name": "pixel_font",
+            "size": "10",
+            "bold": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
+        }
+    },
     "button": {
         "font": {
             "name": "pixel_font",
@@ -37,13 +78,66 @@
             "shape": "rectangle"
         }
     },
-    "label": {
+    "game-button": {
         "font": {
             "name": "pixel_font",
-            "size": "24"
+            "size": "20",
+            "bold": "0",
+            "italic": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
         },
         "colours": {
-            "text": "#FFFFFF"
+            "normal_bg": "#444444",
+            "hovered_bg": "#555555",
+            "disabled_bg": "#222222",
+            "selected_bg": "#333333",
+            "active_bg": "#666666",
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFF00",
+            "disabled_text": "#888888",
+            "selected_text": "#FFFFFF",
+            "active_text": "#FFFFFF",
+            "normal_border": "#AAAAAA",
+            "hovered_border": "#B0B0B0",
+            "disabled_border": "#808080",
+            "selected_border": "#8080B0",
+            "active_border": "#8080B0"
+        },
+        "misc": {
+            "border_width": "2",
+            "border_color": "#FFFFFF",
+            "shape": "rectangle"
+        }
+    },
+    "toggle-button": {
+        "font": {
+            "name": "pixel_font",
+            "size": "20",
+            "bold": "0",
+            "italic": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
+        },
+        "colours": {
+            "normal_bg": "#444444",
+            "hovered_bg": "#555555",
+            "disabled_bg": "#222222",
+            "selected_bg": "#333333",
+            "active_bg": "#666666",
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFF00",
+            "disabled_text": "#888888",
+            "selected_text": "#FFFFFF",
+            "active_text": "#FFFFFF",
+            "normal_border": "#AAAAAA",
+            "hovered_border": "#B0B0B0",
+            "disabled_border": "#808080",
+            "selected_border": "#8080B0",
+            "active_border": "#8080B0"
+        },
+        "misc": {
+            "border_width": "2",
+            "border_color": "#FFFFFF",
+            "shape": "rectangle"
         }
     }
 }

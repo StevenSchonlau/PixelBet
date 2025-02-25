@@ -23,12 +23,21 @@ current_games = [
     {"name": GAME_NAMES.pop()},
     {"name": GAME_NAMES.pop()}
 ]
+button_mapping = {}
+
+def initialize_home(ui_manager):
+    """Initializes the home screen with dynamically generated game buttons."""
+    global button_mapping
+    ui_manager.clear_and_reset()
+    button_mapping.clear()
 
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
     now = datetime.datetime.now()
     if now.minute != last_update_minute:  # Update at the start of a new global minute
         last_update_minute = now.minute
+        for button in button_mapping.keys():
+            button.kill()
         
         # Ensure unique derby name until all are used
         if len(used_derbies) == len(DERBY_NAMES):
@@ -53,15 +62,14 @@ def draw_clock(screen):
     screen.blit(clock_surface, (SCREEN_WIDTH - 120, 10))
 
 def draw_home_screen(screen, events, ui_manager):
+    global selected_game, current_screen
+    current_screen = "home"
+    selected_game = None
     screen.fill(BLACK)
-    
-    # Update games dynamically at the start of a new minute
-    update_games()
     
     title_text = FONT.render("Select a Game", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
     
-    game_buttons = []
     y_offset = 150
     spacing = 20
     
@@ -76,22 +84,24 @@ def draw_home_screen(screen, events, ui_manager):
             relative_rect=pygame.Rect((button_x, y_offset), (button_width, button_height)),
             text=game["name"],
             manager=ui_manager,
-            object_id="#button",
+            object_id="#game-button",
         )
-        game_buttons.append(button)
+        button_mapping[button] = game["name"]
         y_offset += button_height + spacing
     
     # Process button clicks
     for event in events:
-        if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element in game_buttons:
-                print(f"Launching {event.ui_element.text}...")
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            print(event.ui_element.object_ids)
+            print(event.ui_element.text)
+            selected_game = event.ui_element.text
 
     # Draw clock
     draw_clock(screen)
+    update_games()
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
-    ui_manager.clear_and_reset()
 
     pygame.display.flip()
+    return selected_game
