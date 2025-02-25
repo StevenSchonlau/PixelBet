@@ -2,7 +2,7 @@ import pygame
 import pygame_gui
 import datetime
 import random
-from constants import SCREEN_WIDTH, BLACK, WHITE, FONT
+from constants import *
 from profileView import draw_view_profile_button
 
 # List of alternative game names
@@ -84,7 +84,7 @@ def draw_home_screen(screen, events, ui_manager):
     global selected_game, current_screen
     current_screen = "home"
     selected_game = None
-    screen.fill(BLACK)
+    draw_background(screen)
     
     title_text = FONT.render("Select a Game", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))

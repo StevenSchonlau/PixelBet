@@ -2,7 +2,7 @@ import pygame
 import pygame_gui
 import datetime
 import random
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
+from constants import *
 
 # Global variables
 back_button = None
@@ -288,7 +288,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
     global user_balance, bet_history, race_start_time, bets_placed
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets
-    screen.fill(BLACK)
+    draw_background(screen)
 
     # Show game and balance info
     game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)
