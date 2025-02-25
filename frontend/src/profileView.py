@@ -23,11 +23,11 @@ def get_profile():
 
 
 def save_profile():
-    global username
+    global username, ui_dict
     session = UserSession()
     current_user = session.get_user()
     data = {
-        "username": username,
+        "username": ui_dict["username"].get_text(),
         "avatar": all_sprites[active_index].name
     }
 
@@ -73,6 +73,7 @@ active_sprite = None
 active_index = 0
 username = ""
 avatar = ""
+ui_dict = {}
 
 
 def init_profile_view(ui_manager):
@@ -98,14 +99,30 @@ def init_profile_view(ui_manager):
     ui_elements = init_view_profile_ui(ui_manager)
 
 def init_view_profile_ui(ui_manager):
+    global username
+    global ui_dict
     ui_manager.clear_and_reset()
 
     back_button = draw_button("Back", ui_manager, 0, 0)
     left_button = draw_button("<", ui_manager, 0, 200)
     right_button = draw_button(">", ui_manager, 300, 200)
     save_button = draw_button("save", ui_manager, get_center("save"), 500)
+    username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+        manager=ui_manager,
+        object_id="username",
+        placeholder_text=username
+    )
+    username_label_rect = pygame.Rect((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 8 * .5 - 30), (SCREEN_WIDTH // 2, 30))
+    username_label = pygame_gui.elements.UILabel(
+        relative_rect=username_label_rect,
+        text="Username:",
+        manager=ui_manager,
+        object_id="username_label"
+    )
 
-    return {"back": back_button, "left": left_button, "right": right_button, "save": save_button}
+    ui_dict = {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
+    return {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
 
 
 def draw_view_profile_button(screen, ui_manager):
