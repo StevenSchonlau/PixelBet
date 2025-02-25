@@ -23,9 +23,14 @@ def get_profile():
 
 
 def save_profile():
-    global username, ui_dict
+    global username, ui_dict, error
     session = UserSession()
     current_user = session.get_user()
+    
+    if ui_dict["username"].get_text() == "":
+        error = "Cannot leave username blank!"
+        return
+
     data = {
         "username": ui_dict["username"].get_text(),
         "avatar": all_sprites[active_index].name
@@ -34,8 +39,10 @@ def save_profile():
     response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
     if response.status_code == 200:
         print("Profile updated:", response.json())
+        error = None
     else:
         print("Error:", response.status_code, response.json())
+        error = "An error occurred"
 
 
 def load_sprites(sheet, num_frames, row=0, scale=2):
@@ -50,13 +57,13 @@ def load_sprites(sheet, num_frames, row=0, scale=2):
 
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, x=60, y=0, name="", sprite_sheet=None):
+    def __init__(self, name="", sprite_sheet=None):
         super().__init__()
         self.name = name
         self.frames = load_sprites(sprite_sheet, 8)
         self.index = 0
         self.image = self.frames[self.index]
-        self.rect = self.image.get_rect(topleft=(x, y))
+        self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 8 * 3))
         self.animation_speed = 5
         self.frame_counter = 0
     
@@ -74,6 +81,7 @@ active_index = 0
 username = ""
 avatar = ""
 ui_dict = {}
+error = None
 
 
 def init_profile_view(ui_manager):
@@ -104,15 +112,15 @@ def init_view_profile_ui(ui_manager):
     ui_manager.clear_and_reset()
 
     back_button = draw_button("Back", ui_manager, 0, 0)
-    left_button = draw_button("<", ui_manager, 0, 200)
-    right_button = draw_button(">", ui_manager, 300, 200)
-    save_button = draw_button("save", ui_manager, get_center("save"), 500)
+    left_button = draw_button("<", ui_manager, 2.6, 4)
+    right_button = draw_button(">", ui_manager, 4.6, 4)
+    save_button = draw_button("save", ui_manager, 3.3, 7)
     username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
         manager=ui_manager,
-        object_id="username",
-        placeholder_text=username
+        object_id="username"
     )
+    username_field.set_text(username)
     username_label_rect = pygame.Rect((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 8 * .5 - 30), (SCREEN_WIDTH // 2, 30))
     username_label = pygame_gui.elements.UILabel(
         relative_rect=username_label_rect,
@@ -144,9 +152,11 @@ def draw_button(text, ui_manager, x, y):
     text_surface = FONT.render(text, True, WHITE)
     button_width = text_surface.get_width() + 40
     button_height = text_surface.get_height() + 20
+    button_x = (SCREEN_WIDTH // 8) * x
+    button_y = (SCREEN_HEIGHT // 8) * y
     
     return pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((x, y), (button_width, button_height)),
+        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
         text=text,
         manager=ui_manager,
     )
@@ -160,7 +170,7 @@ def get_center(text):
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
-    global active_sprite, active_index
+    global active_sprite, active_index, error
     draw_background(screen)
 
     for event in events:
@@ -187,7 +197,12 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
         screen.blit(active_sprite.image, active_sprite.rect)
 
         sprite_name = FONT.render(active_sprite.name, True, WHITE)
-        screen.blit(sprite_name, (80, 280))
+        screen.blit(sprite_name, ((SCREEN_WIDTH // 8) * 3.1, (SCREEN_HEIGHT // 8) * 4.9))
+    
+    if error:
+        error_name = FONT.render(error, True, WHITE)
+        screen.blit(error_name, ((SCREEN_WIDTH // 8) * 1, (SCREEN_HEIGHT // 8) * 6))
+
 
     pygame.display.flip()
     return selected_game
