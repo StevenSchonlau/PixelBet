@@ -3,6 +3,7 @@ import pygame_gui
 import datetime
 import random
 from constants import SCREEN_WIDTH, BLACK, WHITE, FONT
+from profileView import draw_view_profile_button
 
 # List of alternative game names
 GAME_NAMES = [
@@ -98,6 +99,7 @@ def draw_home_screen(screen, events, ui_manager):
 
     # Draw clock
     draw_clock(screen)
+    draw_view_profile_button(screen, ui_manager)
     update_games()
 
     ui_manager.update(1 / 60)

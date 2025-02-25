@@ -9,6 +9,7 @@ from login import draw_login_screen, initialize_login, get_user, get_sign_up, se
 from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
 from confirmEmail import initialize_confirming, draw_confirming_screen
 from passwordReset import initialize_password_reset, draw_password_reset_screen
+from profileView import draw_view_profile, init_profile_view
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -50,6 +51,11 @@ def main():
                     initialized = "home"
                 selected_game = draw_home_screen(screen, events, ui_manager)  # If a game is selected, it will return a value
 
+            elif selected_game == "View Profile":
+                if initialized != "profile-view":
+                    init_profile_view(ui_manager)
+                    initialized = "profile-view"
+                selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
             else:  # A game is selected, display game screen
                 if initialized != "game":
                     initialize_game(ui_manager)
@@ -67,27 +73,27 @@ def main():
                         set_back_to_login(False)
                         set_confirming(False)
                         set_password_reset(False)
-                    if intialized != "login":
+                    if initialized != "login":
                         initialize_login(ui_manager)
-                        intialized = "login"
+                        initialized = "login"
                     draw_login_screen(screen, events, ui_manager)
                 else:
                     if get_back_to_login():
                         set_sign_up(False)
                     if get_confirming():
-                        if intialized != "confirming":
+                        if initialized != "confirming":
                             initialize_confirming(ui_manager)
-                            intialized = "confirming"
+                            initialized = "confirming"
                         draw_confirming_screen(screen, events, ui_manager)
                     else: 
-                        if intialized != "signup":
+                        if initialized != "signup":
                             initialize_signup(ui_manager)
-                            intialized = "signup"
+                            initialized = "signup"
                         draw_signup_screen(screen, events, ui_manager)
             else: #password reset
-                if intialized != "password_reset":
+                if initialized != "password_reset":
                     initialize_password_reset(ui_manager)
-                    intialized = "password_reset"
+                    initialized = "password_reset"
                 draw_password_reset_screen(screen, events, ui_manager)
 
         ui_manager.update(time_delta)  # Update pygame_gui

@@ -13,6 +13,8 @@ BLUE = (0, 0, 255)
 BUTTON_COLOR = (200, 200, 200)
 HOVER_COLOR = (170, 170, 170)
 
+SPRITE_SIZE = 128
+
 THEME_PATH = "frontend/assets/ui/theme.json"
 
 FONT_PATH = "frontend/assets/fonts/PixelEmulator-xq08.ttf"
