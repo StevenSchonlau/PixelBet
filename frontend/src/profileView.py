@@ -57,7 +57,7 @@ class Sprite(pygame.sprite.Sprite):
         self.index = 0
         self.image = self.frames[self.index]
         self.rect = self.image.get_rect(topleft=(x, y))
-        self.animation_speed = 10
+        self.animation_speed = 5
         self.frame_counter = 0
     
     def update(self):
@@ -76,7 +76,7 @@ avatar = ""
 
 
 def init_profile_view(ui_manager):
-    global all_sprites, active_sprite, avatar, username
+    global all_sprites, active_sprite, avatar, username, active_index
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
@@ -86,9 +86,11 @@ def init_profile_view(ui_manager):
     avatar = user["avatar"]
     username = user["username"]
     if avatar:
-        for sprite in all_sprites:
+        for index, sprite in enumerate(all_sprites):
             if sprite.name == avatar:
                 active_sprite = sprite
+                active_index = index
+
     else:
         active_sprite = all_sprites[0]
 
@@ -146,11 +148,11 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
             if text == "Back":
                 selected_game = None
             elif text == "<" and active_sprite:
-                active_index -= 1
-                active_sprite = all_sprites[active_index % len(all_sprites)]
+                active_index = (active_index - 1) % len(all_sprites)
+                active_sprite = all_sprites[active_index]
             elif text == ">" and active_sprite:
-                active_index += 1
-                active_sprite = all_sprites[active_index % len(all_sprites)]
+                active_index = (active_index + 1) % len(all_sprites)
+                active_sprite = all_sprites[active_index]
             elif text == "save":
                 save_profile()
 
@@ -160,6 +162,9 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     if active_sprite:
         active_sprite.update()
         screen.blit(active_sprite.image, active_sprite.rect)
+
+        sprite_name = FONT.render(active_sprite.name, True, WHITE)
+        screen.blit(sprite_name, (80, 280))
 
     pygame.display.flip()
     return selected_game
