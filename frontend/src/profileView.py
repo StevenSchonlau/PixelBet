@@ -95,6 +95,17 @@ def init_profile_view(ui_manager):
         active_sprite = all_sprites[0]
 
     ui_manager.clear_and_reset()
+    ui_elements = init_view_profile_ui(ui_manager)
+
+def init_view_profile_ui(ui_manager):
+    ui_manager.clear_and_reset()
+
+    back_button = draw_button("Back", ui_manager, 0, 0)
+    left_button = draw_button("<", ui_manager, 0, 200)
+    right_button = draw_button(">", ui_manager, 300, 200)
+    save_button = draw_button("save", ui_manager, get_center("save"), 500)
+
+    return {"back": back_button, "left": left_button, "right": right_button, "save": save_button}
 
 
 def draw_view_profile_button(screen, ui_manager):
@@ -134,11 +145,6 @@ def get_center(text):
 def draw_view_profile(screen, events, ui_manager, selected_game):
     global active_sprite, active_index
     screen.fill(BLACK)
-
-    draw_button("Back", ui_manager, 0, 0)
-    draw_button("<", ui_manager, 0, 200)
-    draw_button(">", ui_manager, 300, 200)
-    draw_button("save", ui_manager, get_center("save"), 500)
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
