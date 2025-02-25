@@ -9,7 +9,6 @@ import uuid
 
 import traceback
 
-
 auth_bp = Blueprint('auth', __name__, template_folder="../templates")
 
 def send_email(to_email, subject, message):
@@ -71,7 +70,7 @@ def register():
         return jsonify({'message': 'User registered!', 'id': user.id})
     except Exception as e:
         print(f"Error: {e}")
-        traceback.print_exc()
+        traceback.print_exc()  # Prints the full traceback for debugging
         return jsonify({'message': 'duplicate'})
 
 @auth_bp.route('/login', methods=['POST'])

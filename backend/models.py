@@ -19,3 +19,5 @@ class User(db.Model):
     #timestamp for sent links
     sent_time_stamp = db.Column(db.DateTime, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, default=False)
+
+    avatar = db.Column(db.String(80))

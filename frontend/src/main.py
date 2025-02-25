@@ -53,9 +53,8 @@ def main():
 
             elif selected_game == "View Profile":
                 if initialized != "profile-view":
-                    init_profile_view()
+                    init_profile_view(ui_manager)
                     initialized = "profile-view"
-                ui_manager.clear_and_reset()
                 selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
             else:  # A game is selected, display game screen
                 if initialized != "game":

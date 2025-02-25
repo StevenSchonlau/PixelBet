@@ -4,18 +4,20 @@ import datetime
 import random
 from constants import *
 
-def load_sprites(sheet, num_frames, row=0):
+def load_sprites(sheet, num_frames, row=0, scale=2):
     frame_width = SPRITE_SIZE
     frame_height = SPRITE_SIZE
     frames = []
     for i in range(num_frames):
         frame = sheet.subsurface(pygame.Rect(i * frame_width, row * frame_height, frame_width, frame_height))
-        frames.append(frame)
+        scaled_frame = pygame.transform.scale(frame, (frame_width * scale, frame_height * scale))
+        frames.append(scaled_frame)
     return frames
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, x, y, sprite_sheet):
+    def __init__(self, x=60, y=0, name="", sprite_sheet=None):
         super().__init__()
+        self.name = name
         self.frames = load_sprites(sprite_sheet, 8)
         self.index = 0
         self.image = self.frames[self.index]
@@ -26,21 +28,24 @@ class Sprite(pygame.sprite.Sprite):
     def update(self):
         self.frame_counter += 1
         if self.frame_counter >= self.animation_speed:
-            print(self.index)
             self.index = (self.index + 1) % len(self.frames)
             self.image = self.frames[self.index]
             self.frame_counter = 0
 
 
-all_sprites = None
-def init_profile_view():
-    global all_sprites
-    sprites = {
-        "city1": Sprite(100, 0, pygame.image.load("frontend/assets/sprites/City_men_1/Walk.png").convert_alpha()),
-        "city2": Sprite(0, 0, pygame.image.load("frontend/assets/sprites/City_men_2/Walk.png").convert_alpha()),
-        "city3": Sprite(200, 0, pygame.image.load("frontend/assets/sprites/City_men_3/Walk.png").convert_alpha())
-    }
-    all_sprites = pygame.sprite.Group(sprites.values())
+all_sprites = {}
+active_sprite = None
+active_index = 0
+
+def init_profile_view(ui_manager):
+    global all_sprites, active_sprite
+    all_sprites = [
+        Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
+        Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
+        Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
+    ]
+    active_sprite = all_sprites[0]
+    ui_manager.clear_and_reset()
 
 def draw_view_profile_button(screen, ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
@@ -56,20 +61,45 @@ def draw_view_profile_button(screen, ui_manager):
         object_id="ViewProfileButton",
     )
 
+def draw_button(text, ui_manager, x, y):
+    text_surface = FONT.render(text, True, WHITE)
+    button_width = text_surface.get_width() + 40
+    button_height = text_surface.get_height() + 20
+    
+    return pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((x, y), (button_width, button_height)),
+        text=text,
+        manager=ui_manager,
+    )
+
 def draw_view_profile(screen, events, ui_manager, selected_game):
+    global active_sprite, active_index
     screen.fill(BLACK)
+
+    button = draw_button("Back", ui_manager, 0, 0)
+    button = draw_button("<", ui_manager, 0, 200)
+    button = draw_button(">", ui_manager, 300, 200)
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            text = event.ui_element.text
             print(event.ui_element.object_ids)
-            print(event.ui_element.text)
-            selected_game = event.ui_element.text
+            print(text)
+            if text == "Back":
+                selected_game = None
+            elif text == "<" and active_sprite:
+                active_index -= 1
+                active_sprite = all_sprites[active_index % len(all_sprites)]
+            elif text == ">" and active_sprite:
+                active_index += 1
+                active_sprite = all_sprites[active_index % len(all_sprites)]
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
 
-    all_sprites.update()
-    all_sprites.draw(screen)
+    if active_sprite:
+        active_sprite.update()
+        screen.blit(active_sprite.image, active_sprite.rect)
 
     pygame.display.flip()
     return selected_game
