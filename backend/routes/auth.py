@@ -78,7 +78,7 @@ def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        return jsonify({'message': 'Login successful', 'user_id': user.id})
+        return jsonify({'message': 'Login successful', 'user_id': user.id, "uuid_user": user.uuid_user})
     return jsonify({'message': 'denied'}), 401
 
 @auth_bp.route('/reset-time', methods=['POST'])

@@ -9,8 +9,11 @@ import uuid
 
 profiles_bp = Blueprint('profiles', __name__)
 
-@profiles_bp.route('/profile<uuid:user_uuid>', methods=['GET'])
+@profiles_bp.route('/profile/<uuid:user_uuid>', methods=['GET'])
 def getProfile(user_uuid):
+    print(user_uuid)
+    users = User.query.with_entities(User.uuid_user).all()  # Fetch all UUIDs
+    print(users)
     user = User.query.filter_by(uuid_user=str(user_uuid)).first()
     print(user)
     if user:

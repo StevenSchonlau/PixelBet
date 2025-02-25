@@ -2,7 +2,22 @@ import pygame
 import pygame_gui
 import datetime
 import random
+import requests
 from constants import *
+from user_session import UserSession
+
+BASEURL = SERVER_URL
+
+def get_profile():
+    session = UserSession()
+    current_user = session.get_user()
+
+    response = requests.get(f"{BASEURL}/profile/{current_user}")
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+
 
 def load_sprites(sheet, num_frames, row=0, scale=2):
     frame_width = SPRITE_SIZE
@@ -44,6 +59,7 @@ def init_profile_view(ui_manager):
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
         Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
     ]
+    get_profile()
     active_sprite = all_sprites[0]
     ui_manager.clear_and_reset()
 

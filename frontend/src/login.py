@@ -6,6 +6,7 @@ import json
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
 import pygame
 import pygame_gui
+from user_session import UserSession
 
 BASE_URL = SERVER_URL #where server is running
 
@@ -40,6 +41,8 @@ def login_server(username, password):
 
 def attempt_login(username, password):
     global error_message
+    session = UserSession()
+
     if username == "":
         error_message = "Username cannot be blank"
         return None
@@ -49,13 +52,15 @@ def attempt_login(username, password):
     if username == "test" and password == "password": #bypass
         print("bypass server")
         error_message = ""
-        return "00000000-0000-0000-0000-000000000000"
+        session.set_user("00000000-0000-0000-0000-000000000000")
+        return session.get_user()
     else:
         response = login_server(username, password)
         if "denied" in str(response.json()):
             error_message = "Incorrect credentials"
             return None
-        return response.json()['user_id']
+        session.set_user(response.json()['uuid_user'])
+        return session.get_user()
 
 #global vars for buttons
 login_btn = None

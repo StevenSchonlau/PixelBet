@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 from models import db, bcrypt
 from routes.auth import auth_bp
+from routes.profiles import profiles_bp
 
 from flask_mailman import Mail
 #Need to register routes here if a new file is created
@@ -20,5 +21,6 @@ def create_app():
         db.create_all()
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(profiles_bp)
 
     return app
