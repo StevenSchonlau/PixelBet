@@ -9,6 +9,7 @@ from login import draw_login_screen, initialize_login, get_user, get_sign_up, se
 from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
 from confirmEmail import initialize_confirming, draw_confirming_screen
 from passwordReset import initialize_password_reset, draw_password_reset_screen
+from profileView import draw_view_profile, init_profile_view
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -50,6 +51,12 @@ def main():
                     initialized = "home"
                 selected_game = draw_home_screen(screen, events, ui_manager)  # If a game is selected, it will return a value
 
+            elif selected_game == "View Profile":
+                if initialized != "profile-view":
+                    init_profile_view()
+                    initialized = "profile-view"
+                ui_manager.clear_and_reset()
+                selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
             else:  # A game is selected, display game screen
                 if initialized != "game":
                     initialize_game(ui_manager)
