@@ -90,7 +90,7 @@ def init_view_profile_ui(ui_manager):
     return {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
 
 
-def draw_view_profile_button(screen, ui_manager):
+def draw_view_profile_button(ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
     button_width = text_surface.get_width() + 40  # Add padding
     button_height = text_surface.get_height() + 20

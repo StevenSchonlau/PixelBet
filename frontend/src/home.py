@@ -53,6 +53,7 @@ def initialize_home(ui_manager):
         object_id="#crypto-button",
     )
     button_mapping[crypto_button] = "Mine Crypto"
+    draw_view_profile_button(ui_manager)
 
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
@@ -109,7 +110,6 @@ def draw_home_screen(screen, events, ui_manager):
 
     # Draw clock
     draw_clock(screen)
-    draw_view_profile_button(screen, ui_manager)
     update_games()
 
     ui_manager.update(1 / 60)

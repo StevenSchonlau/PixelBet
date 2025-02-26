@@ -8,6 +8,19 @@ import uuid
 
 profiles_bp = Blueprint('profiles', __name__)
 
+
+@profiles_bp.route('/users', methods=['GET'])
+def get_all_users():
+    users = User.query.all()
+    users_data = [{
+        "id": user.id,
+        "username": user.username,
+        "avatar": user.avatar,
+        "uuid_user": user.uuid_user
+    } for user in users]
+    return jsonify(users_data), 200
+
+
 @profiles_bp.route('/profile/<uuid:user_uuid>', methods=['GET'])
 def getProfile(user_uuid):
     user = User.query.filter_by(uuid_user=str(user_uuid)).first()
