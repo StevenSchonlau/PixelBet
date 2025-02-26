@@ -9,19 +9,6 @@ from user_session import UserSession
 BASEURL = SERVER_URL
 
 
-def get_profile():
-    session = UserSession()
-    current_user = session.get_user()
-
-    response = requests.get(f"{BASEURL}/profile/{current_user}")
-    if response.status_code == 200:
-        print(response.json())
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-    
-    return response.json()
-
-
 def save_profile():
     global username, ui_dict, error
     session = UserSession()

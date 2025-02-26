@@ -1,4 +1,6 @@
 import pygame
+from user_session import UserSession
+import requests
 
 pygame.init()
 
@@ -22,6 +24,20 @@ THEME_PATH = "frontend/assets/ui/theme.json"
 FONT_PATH = "frontend/assets/fonts/PixelEmulator-xq08.ttf"
 FONT = pygame.font.Font(FONT_PATH, 24)
 SERVER_URL="http://localhost:5000/"
+
+
+def get_profile():
+    session = UserSession()
+    current_user = session.get_user()
+
+    response = requests.get(f"{SERVER_URL}/profile/{current_user}")
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+    
+    return response.json()
+
 
 def draw_background(surface):
     """Draws background as a gradient"""
