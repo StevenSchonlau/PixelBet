@@ -11,7 +11,7 @@ last_update_time = datetime.datetime.now()
 def initialize_crypto(ui_manager):
     """Initializes the crypto mining screen."""
     ui_manager.clear_and_reset()
-    global back_button, toggle_button, earnings_display, status_message
+    global back_button, toggle_button, manual_mine_button, earnings_display, status_message
     back_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
         text="Back",
@@ -23,6 +23,13 @@ def initialize_crypto(ui_manager):
         text="Start Mining",
         manager=ui_manager,
         object_id="#toggle-button",
+    )
+    manual_mine_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40), (200, 40)),
+        text="Manual Mine",
+        manager=ui_manager,
+        object_id="#manual-mine-button",
+        visible=False
     )
     earnings_display = pygame_gui.elements.UILabel(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100), (200, 40)),
@@ -42,11 +49,11 @@ def update_earnings():
     now = datetime.datetime.now()
     elapsed_time = (now - last_update_time).total_seconds()
     if mining:
-        earnings += elapsed_time * 0.01  # Increase earnings based on time
+        earnings += elapsed_time * 0.05  # Increase earnings based on time
     last_update_time = now
 
 def draw_crypto_screen(screen, events, ui_manager):
-    global mining
+    global mining, earnings
     draw_background(screen)
     title_text = FONT.render("Crypto Mining Simulation", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
@@ -60,10 +67,15 @@ def draw_crypto_screen(screen, events, ui_manager):
                 mining = not mining
                 if mining:
                     toggle_button.set_text("Stop Mining")
+                    manual_mine_button.show()
                     status_message.set_text("Mining Started")
                 else:
                     toggle_button.set_text("Start Mining")
+                    manual_mine_button.hide()
                     status_message.set_text("Mining Stopped")
+            elif event.ui_element == manual_mine_button:
+                if mining:
+                    earnings += .5
 
     update_earnings()
     
