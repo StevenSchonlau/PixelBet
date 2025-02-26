@@ -103,8 +103,10 @@ def draw_home_screen(screen, events, ui_manager):
             
             if event.ui_element.text == "Mine Crypto":
                 selected_game = "crypto"
-            else:
+            elif "Derby" in event.ui_element.text:
                 selected_game = event.ui_element.text
+            else:
+                selected_game = "underDev"
             
             #selected_game = event.ui_element.text
 

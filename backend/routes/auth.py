@@ -20,7 +20,7 @@ def send_email(to_email, subject, message):
     email.send()
     return "Email sent!"
 
-def send_email_route(uuidUser, username, to_email="cox407@purdue.edu"):
+def send_email_route(uuidUser, username, to_email=os.getenv('EMAIL_USERNAME', 'your_email@gmail.com')):
     # Get email data from the request JSON
     if not to_email:
         return jsonify({"error": "Email is required"}), 400  # Return error if email is missing
@@ -35,7 +35,7 @@ def send_email_route(uuidUser, username, to_email="cox407@purdue.edu"):
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Error handling
 
-def send_email_password_reset(uuidUser, username, to_email="cox407@purdue.edu"):
+def send_email_password_reset(uuidUser, username, to_email=os.getenv('EMAIL_USERNAME', 'your_email@gmail.com')):
     if not to_email:
         return jsonify({"error": "Email is required"}), 400  # Return error if email is missing
 
@@ -62,6 +62,16 @@ def register():
         return jsonify({'message': 'invalid'})
     try:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        #check if unregistered
+        try:
+            user = User.query.filter_by(email=data['email']).first()
+            if not user.email_confirmed:
+                db.session.delete(user)
+                db.session.commit()
+            else:
+                return jsonify({'message': 'duplicate'})
+        except:
+            print("no unregistered user with same name")
         user = User(username=data['username'], password=hashed_password, email=data['email'])
         print(user)
         db.session.add(user)
@@ -77,7 +87,7 @@ def register():
 def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
-    if user and bcrypt.check_password_hash(user.password, data['password']):
+    if user and bcrypt.check_password_hash(user.password, data['password']) and user.email_confirmed:
         return jsonify({'message': 'Login successful', 'user_id': user.id, "uuid_user": user.uuid_user})
     return jsonify({'message': 'denied'}), 401
 
@@ -153,7 +163,7 @@ def password_reset_post_confirm(user_uuid):
     hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
     user.password = hashed_password
     db.session.commit()
-    send_email("cox407@purdue.edu", "Password Reset", "Hello! You are receiving this email because you recently reset your password.") #temporary value of my email
+    send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "Password Reset", "Hello! You are receiving this email because you recently reset your password.") #temporary value of my email
     return render_template("confirmation.html", message="Successfully reset password!")
 
 @auth_bp.route('/password_reset/<uuid:user_uuid>', methods=['GET'])

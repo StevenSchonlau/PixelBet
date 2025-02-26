@@ -11,6 +11,7 @@ from confirmEmail import initialize_confirming, draw_confirming_screen
 from passwordReset import initialize_password_reset, draw_password_reset_screen
 from profileView import draw_view_profile, init_profile_view
 from crypto import initialize_crypto, draw_crypto_screen
+from underDev import initialize_underDev, draw_underDev_screen
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -64,6 +65,16 @@ def main():
                 crypto_result = draw_crypto_screen(screen, events, ui_manager)
 
                 if crypto_result == "home":  # If "Back" is pressed in crypto, return to home
+                    selected_game = None
+                    initialize_home(ui_manager)
+                    initialized = "home"
+            elif selected_game == "underDev":
+                if initialized != "underDev":
+                    initialize_underDev(ui_manager)
+                    initialized = "underDev"
+                selected_game = draw_underDev_screen(screen, events, ui_manager, selected_game)
+
+                if selected_game == "home":  # If "Back" is pressed in crypto, return to home
                     selected_game = None
                     initialize_home(ui_manager)
                     initialized = "home"

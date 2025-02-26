@@ -189,11 +189,11 @@ def place_bet(horse_name, bet_amount, horse_odds):
         existing_bet["amount"] = bet_amount  # Update bet amount
 
         # **Update bet history to reflect changes**
-        for bet in bet_history:
+        for bet in bets_placed:
             if bet["horse"] == horse_name:
                 bet["amount"] = bet_amount  # Update history record
                 bet["odds"] = horse_odds
-                bet["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                bet["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         return "Bet updated successfully!"
     else:
@@ -205,18 +205,18 @@ def place_bet(horse_name, bet_amount, horse_odds):
 
         # Store new bet
         bet_details = {
-            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "horse": horse_name,
             "odds": horse_odds,
             "amount": bet_amount
         }
+        print(bet_details)
 
         # Add to active bets and bet history
         bets_placed[:] = [bet for bet in bets_placed if bet["horse"] != horse_name]
         bets_placed.append(bet_details)  # Add updated/new bet
 
         # **Update bet history in the same way**
-        bet_history[:] = [bet for bet in bet_history if bet["horse"] != horse_name]
         bet_history.append(bet_details)  
 
         print(f"✅ Bet placed: {bet_details}")
@@ -326,9 +326,10 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 user_balance += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
+        print(bets_placed)
 
         bets_placed.clear()  # Clear bets only after processing
-
+        print(bets_placed)
         # Set flag to prevent rerunning
         winner_announced = True
     if time_elapsed >= 30:
