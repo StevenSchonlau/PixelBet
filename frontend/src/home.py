@@ -47,7 +47,7 @@ def initialize_home(ui_manager):
     
     # Create "Mine Crypto" button
     crypto_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((200, y_offset), (400, 40)),
+        relative_rect=pygame.Rect((0, 550), (200, 50)),
         text="Mine Crypto",
         manager=ui_manager,
         object_id="#crypto-button",

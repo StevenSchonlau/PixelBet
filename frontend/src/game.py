@@ -9,11 +9,12 @@ back_button = None
 history_toggle_button = None
 bet_buttons = {}
 bet_amount_entry = None
-error_label = None
+message_label = None
 race_timer_label = None
 race_start_time = None
 racing_phase = False
 showing_history = False  
+winner_announced = False
 bets_placed = []
 bet_history = []
 user_balance = 1000
@@ -157,7 +158,8 @@ def draw_betting_table(ui_manager):
         table_elements[f"bet_confirm_{i}"] = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((630, y_offset, 70, 30)),  # Confirm Bet
             text="Confirm",
-            manager=ui_manager
+            manager=ui_manager,
+            object_id="confirm-button"
         )
         y_offset += 30  # Space between rows
 
@@ -223,7 +225,7 @@ def place_bet(horse_name, bet_amount, horse_odds):
 def initialize_game(ui_manager):
     """Initializes the game screen UI elements for horse derby betting."""
     global back_button, history_toggle_button, bet_buttons, bet_amount_entry
-    global error_label, race_timer_label, race_start_time, horses
+    global message_label, race_timer_label, race_start_time, horses
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets
     # Clear old UI elements
     ui_manager.clear_and_reset()
@@ -252,7 +254,7 @@ def initialize_game(ui_manager):
 
     # Create "Back" button to return to home
     back_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 150, 20, 100, 40)),  # Position: Top Right
+        relative_rect=pygame.Rect((0, 0, 100, 40)),  # Position: Top Right
         text="Back",
         manager=ui_manager,
         object_id="#back_button"
@@ -266,19 +268,19 @@ def initialize_game(ui_manager):
         object_id="#timer_label"
     )
 
-    # Error message label
-    error_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 150, 240, 300, 30)),
+    #message label
+    message_label = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 150, 260, 300, 30)),
         text="",
         manager=ui_manager,
         object_id="#label"
     )
 
     history_toggle_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250, 180, 40)),
+        relative_rect=pygame.Rect((0, SCREEN_HEIGHT - 40, 180, 40)),
         text="View Bet History",
         manager=ui_manager,
-        object_id="#toggle_button"
+        object_id="toggle-button"
     )
     draw_betting_table(ui_manager)
     # Start the race timer
@@ -286,7 +288,7 @@ def initialize_game(ui_manager):
 
 def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
-    global user_balance, bet_history, race_start_time, bets_placed
+    global user_balance, bet_history, race_start_time, bets_placed, message_label, winner_announced
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets
     draw_background(screen)
 
@@ -294,21 +296,28 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)
     balance_text = FONT.render(f"Balance: ${user_balance:.2f}", True, WHITE)
     screen.blit(game_text, (SCREEN_WIDTH // 2 - game_text.get_width() // 2, 50))
-    screen.blit(balance_text, (50, 20))
+    screen.blit(balance_text, (500, 10))
 
     # Time logic
     now = datetime.datetime.now()
     time_elapsed = (now - race_start_time).seconds
-    time_remaining = max(0, 60 - time_elapsed)
+    time_remaining = max(0, 30 - time_elapsed)
+    
 
     # Update race phase logic
+    if time_elapsed < 20:  # Betting Phase (0-19s)
+        time_remaining = 20 - time_elapsed
+        race_timer_label.set_text(f"Next Race: {time_remaining}s")
+        
     if time_elapsed >= 20 and not racing_phase:
         print("🏇 Race Starting!")
+        time_remaining = 30
         racing_phase = True  # Enter racing phase
         #winning_horse = random.choice(horses)["name"]  # Select winner
 
-    if time_elapsed >= 60:
+    if time_elapsed == 25 and not winner_announced:
         print(f"🏆 Winning Horse: {winning_horse}")
+        message_label.set_text(f"Winning Horse: {winning_horse}")
 
         # Process bets
         for bet in bets_placed:
@@ -316,14 +325,22 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 winnings = bet["amount"] * bet["odds"]
                 user_balance += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
+                message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
 
+        bets_placed.clear()  # Clear bets only after processing
+
+        # Set flag to prevent rerunning
+        winner_announced = True
+    if time_elapsed >= 30:
         # Reset for next race
-        bets_placed.clear()
         race_start_time = datetime.datetime.now()
         racing_phase = False  # Return to betting phase
+        winner_announced = False
         initialize_game(ui_manager)  # Reset horses
-
-    race_timer_label.set_text(f"Next Race: {time_remaining}s")
+    if racing_phase == False:
+        race_timer_label.set_text(f"Next Race: {time_remaining}s")
+    else:
+        race_timer_label.set_text(f"Next Derby: {time_remaining}s")
 
     # Draw race box
     pygame.draw.rect(screen, WHITE, (50, 100, SCREEN_WIDTH - 100, 150), 2)  # White border
@@ -335,9 +352,9 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         horse_odds = horse["odds"]
         if racing_phase:
             if horse_name == winning_horse:
-                speed = random.randint(1, 10)  # Fastest movement for winner
+                speed = random.randint(1, 10) / 2  # Fastest movement for winner
             else:
-                speed = random.randint(1, 10 - int(horse_odds))  # Higher odds → slower movement
+                speed = random.randint(1, 10 - int(horse_odds)) / 2 # Higher odds → slower movement
 
             horse_positions[horse_name] += speed
             if horse_positions[horse_name] >= SCREEN_WIDTH - 150:
@@ -363,7 +380,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                         max_possible_bet = user_balance + horse_bets.get(horse_name, 0)
                         if bet_amount > max_possible_bet:
                             input_field.set_text(str(pending_bets[horse_name]))  # Reset input
-                            error_label.set_text("Error: Insufficient funds!")
+                            message_label.set_text("Error: Insufficient funds!")
                         else:
                             pending_bets[horse_name] = bet_amount  # Store in pending bets
                             input_field.set_text(str(pending_bets[horse_name]))
@@ -399,14 +416,14 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                             pending_bets[horse_name] += 1
                             table_elements[f"bet_input_{i}"].set_text(str(pending_bets[horse_name]))
                         else:
-                            error_label.set_text("Error: Insufficient funds!")
+                            message_label.set_text("Error: Insufficient funds!")
 
                 if event.ui_element == table_elements[f"bet_confirm_{i}"]:
                     if racing_phase:
-                        error_label.set_text("Betting is closed!")
+                        message_label.set_text("Betting is closed!")
                     else:
                         bet_amount = pending_bets[horse_name]
-                        error_label.set_text(place_bet(horse_name, bet_amount, horse_odds))
+                        message_label.set_text(place_bet(horse_name, bet_amount, horse_odds))
 
             
             
