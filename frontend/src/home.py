@@ -44,6 +44,15 @@ def initialize_home(ui_manager):
         )
         button_mapping[button] = game["name"]
         y_offset += 40 + spacing
+    
+    # Create "Mine Crypto" button
+    crypto_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((200, y_offset), (400, 40)),
+        text="Mine Crypto",
+        manager=ui_manager,
+        object_id="#crypto-button",
+    )
+    button_mapping[crypto_button] = "Mine Crypto"
 
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
@@ -90,7 +99,13 @@ def draw_home_screen(screen, events, ui_manager):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             print(event.ui_element.object_ids)
             print(event.ui_element.text)
-            selected_game = event.ui_element.text
+            
+            if event.ui_element.text == "Mine Crypto":
+                selected_game = "crypto"
+            else:
+                selected_game = event.ui_element.text
+            
+            #selected_game = event.ui_element.text
 
     # Draw clock
     draw_clock(screen)
