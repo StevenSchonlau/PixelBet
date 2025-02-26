@@ -36,27 +36,29 @@ def initialize_home(ui_manager):
     
     # Create game buttons with dynamic sizing based on text width
     for game in current_games:
-        text_surface = FONT.render(game["name"], True, WHITE)
-        button_width = text_surface.get_width() + 40  # Add padding
-        button_height = text_surface.get_height() + 20
-        button_x = (SCREEN_WIDTH - button_width) // 2
-        
         button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((button_x, y_offset), (button_width, button_height)),
+            relative_rect=pygame.Rect((200, y_offset), (400, 40)),
             text=game["name"],
             manager=ui_manager,
             object_id="#game-button",
         )
         button_mapping[button] = game["name"]
-        y_offset += button_height + spacing
+        y_offset += 40 + spacing
+    
+    # Create "Mine Crypto" button
+    crypto_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 550), (200, 50)),
+        text="Mine Crypto",
+        manager=ui_manager,
+        object_id="#crypto-button",
+    )
+    button_mapping[crypto_button] = "Mine Crypto"
 
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
     now = datetime.datetime.now()
     if now.minute != last_update_minute:  # Update at the start of a new global minute
         last_update_minute = now.minute
-        for button in button_mapping.keys():
-            button.kill()
         
         # Ensure unique derby name until all are used
         if len(used_derbies) == len(DERBY_NAMES):
@@ -73,6 +75,9 @@ def update_games():
             {"name": available_games.pop()},
             {"name": available_games.pop()}
         ]
+        for button, game in zip(button_mapping.keys(), current_games):
+            button.set_text(game["name"])  # Update button text
+            
 
 
 def draw_clock(screen):
@@ -94,7 +99,13 @@ def draw_home_screen(screen, events, ui_manager):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             print(event.ui_element.object_ids)
             print(event.ui_element.text)
-            selected_game = event.ui_element.text
+            
+            if event.ui_element.text == "Mine Crypto":
+                selected_game = "crypto"
+            else:
+                selected_game = event.ui_element.text
+            
+            #selected_game = event.ui_element.text
 
     # Draw clock
     draw_clock(screen)
