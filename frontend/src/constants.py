@@ -101,6 +101,7 @@ class Sprite(pygame.sprite.Sprite):
 
 
 class User:
-    def __init__(self, username, id):
+    def __init__(self, username, id, net_worth=None):
         self.username = username
         self.id = id
+        self.net_worth = net_worth

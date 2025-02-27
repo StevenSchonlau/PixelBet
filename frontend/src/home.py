@@ -5,6 +5,7 @@ import random
 from constants import *
 from profileView import draw_view_profile_button
 from friendsList import draw_home_friends_button
+from leaderboard import draw_leaderboard_button
 import multipleGames
 
 # List of alternative game names
@@ -57,7 +58,8 @@ def initialize_home(ui_manager):
     button_mapping[crypto_button] = "Mine Crypto"
 
     draw_home_friends_button(ui_manager)
-    draw_view_profile_button(ui_manager)
+    profile_button = draw_view_profile_button(ui_manager)
+    draw_leaderboard_button(ui_manager, profile_button)
     # Create "Multiple Games" button
     multiple_games_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 500), (400, 50)),  # Centered with width 400
@@ -122,6 +124,8 @@ def draw_home_screen(screen, events, ui_manager):
             elif "Profile" in event.ui_element.text:
                 selected_game = event.ui_element.text
             elif "Friends" in event.ui_element.text:
+                selected_game = event.ui_element.text
+            elif "Leaderboard" in event.ui_element.text:
                 selected_game = event.ui_element.text
             else:
                 selected_game = "underDev"
