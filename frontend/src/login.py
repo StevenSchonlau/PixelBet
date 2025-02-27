@@ -59,7 +59,7 @@ def attempt_login(username, password):
         if "denied" in str(response.json()):
             error_message = "Incorrect credentials"
             return None
-        session.set_user(response.json()['uuid_user'])
+        session.set_user(response.json()['user_id'])
         return session.get_user()
 
 #global vars for buttons

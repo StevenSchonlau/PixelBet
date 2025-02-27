@@ -9,19 +9,6 @@ from user_session import UserSession
 BASEURL = SERVER_URL
 
 
-def get_profile():
-    session = UserSession()
-    current_user = session.get_user()
-
-    response = requests.get(f"{BASEURL}/profile/{current_user}")
-    if response.status_code == 200:
-        print(response.json())
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-    
-    return response.json()
-
-
 def save_profile():
     global username, ui_dict, error
     session = UserSession()
@@ -39,40 +26,10 @@ def save_profile():
     response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
     if response.status_code == 200:
         print("Profile updated:", response.json())
-        error = None
+        error = "Success!"
     else:
         print("Error:", response.status_code, response.json())
         error = "An error occurred"
-
-
-def load_sprites(sheet, num_frames, row=0, scale=2):
-    frame_width = SPRITE_SIZE
-    frame_height = SPRITE_SIZE
-    frames = []
-    for i in range(num_frames):
-        frame = sheet.subsurface(pygame.Rect(i * frame_width, row * frame_height, frame_width, frame_height))
-        scaled_frame = pygame.transform.scale(frame, (frame_width * scale, frame_height * scale))
-        frames.append(scaled_frame)
-    return frames
-
-
-class Sprite(pygame.sprite.Sprite):
-    def __init__(self, name="", sprite_sheet=None):
-        super().__init__()
-        self.name = name
-        self.frames = load_sprites(sprite_sheet, 8)
-        self.index = 0
-        self.image = self.frames[self.index]
-        self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 8 * 3))
-        self.animation_speed = 5
-        self.frame_counter = 0
-    
-    def update(self):
-        self.frame_counter += 1
-        if self.frame_counter >= self.animation_speed:
-            self.index = (self.index + 1) % len(self.frames)
-            self.image = self.frames[self.index]
-            self.frame_counter = 0
 
 
 all_sprites = {}
@@ -82,16 +39,22 @@ username = ""
 avatar = ""
 ui_dict = {}
 error = None
+selected_friend = None
 
 
-def init_profile_view(ui_manager):
-    global all_sprites, active_sprite, avatar, username, active_index
+def init_profile_view(ui_manager, selected_player=None):
+    global all_sprites, active_sprite, avatar, username, active_index, selected_friend
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
         Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
     ]
-    user = get_profile()
+    if selected_player:
+        user = get_profile(selected_player.id)
+        selected_friend = selected_player
+    else:
+        user = get_profile()
+        selected_friend = None
     avatar = user["avatar"]
     username = user["username"]
     if avatar:
@@ -104,7 +67,7 @@ def init_profile_view(ui_manager):
         active_sprite = all_sprites[0]
 
     ui_manager.clear_and_reset()
-    ui_elements = init_view_profile_ui(ui_manager)
+    init_view_profile_ui(ui_manager)
 
 def init_view_profile_ui(ui_manager):
     global username
@@ -112,15 +75,24 @@ def init_view_profile_ui(ui_manager):
     ui_manager.clear_and_reset()
 
     back_button = draw_button("Back", ui_manager, 0, 0)
-    left_button = draw_button("<", ui_manager, 2.6, 4)
-    right_button = draw_button(">", ui_manager, 4.6, 4)
-    save_button = draw_button("save", ui_manager, 3.3, 7)
-    username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
-        manager=ui_manager,
-        object_id="username"
-    )
-    username_field.set_text(username)
+    if not selected_friend:
+        left_button = draw_button("<", ui_manager, 2.6, 4)
+        right_button = draw_button(">", ui_manager, 4.6, 4)
+        save_button = draw_button("save", ui_manager, 3.3, 7)
+        username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
+            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            manager=ui_manager,
+            object_id="username"
+        )
+        username_field.set_text(username)
+        ui_dict = {"username": username_field, "left": left_button, "right": right_button, "save": save_button}
+    else:
+        username_field = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            text=selected_friend.username,
+            manager=ui_manager,
+            object_id="#username-label"
+        )
     username_label_rect = pygame.Rect((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 8 * .5 - 30), (SCREEN_WIDTH // 2, 30))
     username_label = pygame_gui.elements.UILabel(
         relative_rect=username_label_rect,
@@ -129,11 +101,10 @@ def init_view_profile_ui(ui_manager):
         object_id="username_label"
     )
 
-    ui_dict = {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
-    return {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
+    ui_dict["back"] = back_button
 
 
-def draw_view_profile_button(screen, ui_manager):
+def draw_view_profile_button(ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
     button_width = text_surface.get_width() + 40  # Add padding
     button_height = text_surface.get_height() + 20
@@ -146,20 +117,7 @@ def draw_view_profile_button(screen, ui_manager):
         manager=ui_manager,
         object_id="ViewProfileButton",
     )
-
-
-def draw_button(text, ui_manager, x, y):
-    text_surface = FONT.render(text, True, WHITE)
-    button_width = text_surface.get_width() + 40
-    button_height = text_surface.get_height() + 20
-    button_x = (SCREEN_WIDTH // 8) * x
-    button_y = (SCREEN_HEIGHT // 8) * y
-    
-    return pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
-        text=text,
-        manager=ui_manager,
-    )
+    return button
 
 
 def get_center(text):
