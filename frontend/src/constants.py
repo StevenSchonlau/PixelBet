@@ -41,9 +41,12 @@ def draw_button(text, ui_manager, x, y):
     )
 
 
-def get_profile():
-    session = UserSession()
-    current_user = session.get_user()
+def get_profile(user_id=None):
+    if not user_id:
+        session = UserSession()
+        current_user = session.get_user()
+    else:
+        current_user = user_id
 
     response = requests.get(f"{SERVER_URL}/profile/{current_user}")
     if response.status_code == 200:
