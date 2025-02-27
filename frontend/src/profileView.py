@@ -26,7 +26,7 @@ def save_profile():
     response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
     if response.status_code == 200:
         print("Profile updated:", response.json())
-        error = None
+        error = "Success!"
     else:
         print("Error:", response.status_code, response.json())
         error = "An error occurred"
@@ -39,16 +39,22 @@ username = ""
 avatar = ""
 ui_dict = {}
 error = None
+selected_friend = None
 
 
-def init_profile_view(ui_manager):
-    global all_sprites, active_sprite, avatar, username, active_index
+def init_profile_view(ui_manager, selected_player=None):
+    global all_sprites, active_sprite, avatar, username, active_index, selected_friend
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
         Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
     ]
-    user = get_profile()
+    if selected_player:
+        user = get_profile(selected_player.id)
+        selected_friend = selected_player
+    else:
+        user = get_profile()
+        selected_friend = None
     avatar = user["avatar"]
     username = user["username"]
     if avatar:
@@ -61,7 +67,7 @@ def init_profile_view(ui_manager):
         active_sprite = all_sprites[0]
 
     ui_manager.clear_and_reset()
-    ui_elements = init_view_profile_ui(ui_manager)
+    init_view_profile_ui(ui_manager)
 
 def init_view_profile_ui(ui_manager):
     global username
@@ -69,15 +75,24 @@ def init_view_profile_ui(ui_manager):
     ui_manager.clear_and_reset()
 
     back_button = draw_button("Back", ui_manager, 0, 0)
-    left_button = draw_button("<", ui_manager, 2.6, 4)
-    right_button = draw_button(">", ui_manager, 4.6, 4)
-    save_button = draw_button("save", ui_manager, 3.3, 7)
-    username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
-        manager=ui_manager,
-        object_id="username"
-    )
-    username_field.set_text(username)
+    if not selected_friend:
+        left_button = draw_button("<", ui_manager, 2.6, 4)
+        right_button = draw_button(">", ui_manager, 4.6, 4)
+        save_button = draw_button("save", ui_manager, 3.3, 7)
+        username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
+            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            manager=ui_manager,
+            object_id="username"
+        )
+        username_field.set_text(username)
+        ui_dict = {"username": username_field, "left": left_button, "right": right_button, "save": save_button}
+    else:
+        username_field = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            text=selected_friend.username,
+            manager=ui_manager,
+            object_id="#username-label"
+        )
     username_label_rect = pygame.Rect((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 8 * .5 - 30), (SCREEN_WIDTH // 2, 30))
     username_label = pygame_gui.elements.UILabel(
         relative_rect=username_label_rect,
@@ -86,8 +101,7 @@ def init_view_profile_ui(ui_manager):
         object_id="username_label"
     )
 
-    ui_dict = {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
-    return {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
+    ui_dict["back"] = back_button
 
 
 def draw_view_profile_button(ui_manager):

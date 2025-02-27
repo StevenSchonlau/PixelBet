@@ -5,6 +5,7 @@ import random
 import requests
 from constants import *
 from user_session import UserSession
+from profileView import init_profile_view, draw_view_profile
 
 error = None
 players = []
@@ -12,6 +13,8 @@ friends = []
 sent_pending = []
 rec_pending = []
 curr_player = None
+selected_player = None
+initialized = False
 
 def refresh_data(ui_manager):
     get_all_players()
@@ -221,7 +224,8 @@ def get_friends(ui_manager):
             container=container,
             object_id="#decline-button"
         )
-        view_profile_button.user_id, remove_button.user_id = friend.id, friend.id
+        view_profile_button.user = friend
+        remove_button.user_id = friend.id
         ui_dict["friends"].append(result_label)
         ui_dict["view_profile_buttons"].append(view_profile_button)
         ui_dict["remove_buttons"].append(remove_button)
@@ -256,7 +260,7 @@ def add_friend(username):
         response = requests.post(f"{SERVER_URL}/friend-request/{curr_player.id}/{friend.id}")
         if response.status_code == 200:
             print("success")
-            error = None
+            error = "Success!"
             return True
         else:
             print("Error:", response.status_code, response.json())
@@ -378,7 +382,20 @@ def accept_request(user_id):
         error = response.json()["message"]
 
 def draw_friends_page(screen, events, ui_manager, selected_game):
-    global error
+    global error, selected_player, initialized
+
+    if selected_player:
+        if not initialized:
+            init_profile_view(ui_manager, selected_player=selected_player)
+            initialized = True
+        selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
+        if selected_game == None:
+            selected_game = "Friends"
+            selected_player = None
+            initialized = False
+            init_friends_page(ui_manager)
+        return selected_game
+
     draw_background(screen)
 
     for event in events:
@@ -422,7 +439,7 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
                 reject_request(event.ui_element.user_id)
                 refresh_data(ui_manager)
             elif event.ui_element in ui_dict["view_profile_buttons"]:
-                print(event.ui_element.user_id)
+                selected_player = event.ui_element.user
             elif event.ui_element in ui_dict["remove_buttons"]:
                 remove_friend(event.ui_element.user_id)
                 refresh_data(ui_manager)

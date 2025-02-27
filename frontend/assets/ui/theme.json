@@ -32,6 +32,19 @@
             "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
         }
     },
+    "#username-label": {
+        "colours": {
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFF99",
+            "selected_text": "#FFD700"
+        },
+        "font": {
+            "name": "pixel_font",
+            "size": "20",
+            "bold": "0",
+            "regular_path": "frontend/assets/fonts/PixelEmulator-xq08.ttf"
+        }
+    },
     "#panel_label": {
         "colours": {
             "normal_text": "#FFFFFF",
