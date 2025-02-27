@@ -25,7 +25,7 @@ def get_all_users():
 def getProfile(user_id):
     user = User.query.filter_by(id=str(user_id)).first()
     if user:
-        return jsonify({"username": user.username, "id": user.id, "avatar": user.avatar})
+        return jsonify({"username": user.username, "id": user.id, "avatar": user.avatar, "net_worth": user.net_worth})
     return jsonify({'message': 'User doesn\'t exist'}), 401
 
 @profiles_bp.route('/profile/<uuid:user_id>', methods=['POST'])

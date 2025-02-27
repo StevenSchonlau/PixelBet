@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy.dialects.mysql import CHAR
+from sqlalchemy.dialects.mysql import CHAR, NUMERIC
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
@@ -22,6 +22,7 @@ class User(db.Model):
     sent_time_stamp = db.Column(db.DateTime, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, default=False)
     avatar = db.Column(db.String(80))
+    net_worth = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
 
     sent_requests = db.relationship(
         'FriendAssociation',

@@ -4,6 +4,7 @@ from models import db, bcrypt
 from routes.auth import auth_bp
 from routes.profiles import profiles_bp
 from routes.friends import friends_bp
+from routes.game import game_bp
 
 from flask_mailman import Mail
 #Need to register routes here if a new file is created
@@ -24,5 +25,6 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(profiles_bp)
     app.register_blueprint(friends_bp)
+    app.register_blueprint(game_bp)
 
     return app
