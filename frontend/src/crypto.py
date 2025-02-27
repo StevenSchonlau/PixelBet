@@ -18,7 +18,7 @@ max_upgrade_level = 5
 def initialize_crypto(ui_manager):
     """Initializes the crypto mining screen."""
     ui_manager.clear_and_reset()
-    global back_button, toggle_button, manual_mine_button, earnings_display, status_message, passive_upgrade_button, manual_upgrade_button, passive_upgrade_message, manual_upgrade_message, passive_upgrade_cost_label, manual_upgrade_cost_label
+    global back_button, toggle_button, manual_mine_button, earnings_display, status_message, passive_upgrade_button, manual_upgrade_button, passive_upgrade_message, manual_upgrade_message, passive_upgrade_cost_label, manual_upgrade_cost_label, passive_income_rate_label, manual_mine_rate_label
 
     # Create UI elements for the upgrade chart
     passive_upgrade_message = pygame_gui.elements.UILabel(
@@ -59,6 +59,18 @@ def initialize_crypto(ui_manager):
         object_id="#manual-upgrade-button",
         visible=True
     )
+    passive_income_rate_label = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 300, 200), (200, 40)),
+        text=f"Rate: ${passive_income_rate:.2f}/second",
+        manager=ui_manager,
+        object_id="#passive-income-rate",
+    )
+    manual_mine_rate_label = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 + 100, 200), (200, 40)),
+        text=f"Rate: ${manual_mine_rate:.2f}/click",
+        manager=ui_manager,
+        object_id="#manual-mine-rate",
+    )
     
     back_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
@@ -68,7 +80,7 @@ def initialize_crypto(ui_manager):
     )
     toggle_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 20), (200, 40)),
-        text="Start Mining",
+        text="Start Mining" if not mining else "Stop Mining",
         manager=ui_manager,
         object_id="#toggle-button",
     )
@@ -77,7 +89,7 @@ def initialize_crypto(ui_manager):
         text="Manual Mine",
         manager=ui_manager,
         object_id="#manual-mine-button",
-        visible=False
+        visible=mining
     )
     earnings_display = pygame_gui.elements.UILabel(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100), (200, 40)),
@@ -87,10 +99,20 @@ def initialize_crypto(ui_manager):
     )
     status_message = pygame_gui.elements.UILabel(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 150), (200, 40)),
-        text="Mining Stopped",
+        text="Mining In Progress" if mining else "Mining Stopped",
         manager=ui_manager,
         object_id="#status-message",
     )
+
+    # Check if max upgrade level is reached and hide the upgrade buttons and cost labels if so
+    if passive_upgrade_level >= max_upgrade_level:
+        passive_upgrade_message.set_text("Max tier reached.")
+        passive_upgrade_cost_label.hide()
+        passive_upgrade_button.hide()
+    if manual_upgrade_level >= max_upgrade_level:
+        manual_upgrade_message.set_text("Max tier reached.")
+        manual_upgrade_cost_label.hide()
+        manual_upgrade_button.hide()
 
 def update_earnings():
     global earnings, last_update_time
@@ -101,22 +123,25 @@ def update_earnings():
     last_update_time = now
 
 def upgrade_passive_income():
-    global earnings, passive_income_rate, passive_upgrade_cost, passive_upgrade_level, max_upgrade_level, passive_upgrade_cost_label, manual_upgrade_cost_label
+    global earnings, passive_income_rate, passive_upgrade_cost, passive_upgrade_level, max_upgrade_level, passive_upgrade_cost_label, passive_upgrade_button, passive_income_rate_label
     if passive_upgrade_level < max_upgrade_level:
         if earnings >= passive_upgrade_cost:
             earnings -= passive_upgrade_cost
-            passive_income_rate *= 1.5
+            passive_income_rate *= 2
             passive_upgrade_level += 1
             passive_upgrade_cost *= 1.5
             passive_upgrade_message.set_text(f"Passive Income Tier: {passive_upgrade_level}")
             passive_upgrade_cost_label.set_text(f"Upgrade Cost: ${passive_upgrade_cost:.2f}")
+            passive_income_rate_label.set_text(f"Rate: ${passive_income_rate:.2f}/second")
         else:
             passive_upgrade_message.set_text("Insufficient resources.")
-    else:
+    if passive_upgrade_level >= max_upgrade_level:
         passive_upgrade_message.set_text("Max tier reached.")
+        passive_upgrade_cost_label.hide()
+        passive_upgrade_button.hide()
 
 def upgrade_manual_mining():
-    global earnings, manual_mine_rate, manual_upgrade_cost, manual_upgrade_level, max_upgrade_level
+    global earnings, manual_mine_rate, manual_upgrade_cost, manual_upgrade_level, max_upgrade_level, manual_upgrade_cost_label, manual_upgrade_button, manual_mine_rate_label
     if manual_upgrade_level < max_upgrade_level:
         if earnings >= manual_upgrade_cost:
             earnings -= manual_upgrade_cost
@@ -125,10 +150,13 @@ def upgrade_manual_mining():
             manual_upgrade_cost *= 1.5
             manual_upgrade_message.set_text(f"Manual Mining Tier: {manual_upgrade_level}")
             manual_upgrade_cost_label.set_text(f"Upgrade Cost: ${manual_upgrade_cost:.2f}")
+            manual_mine_rate_label.set_text(f"Rate: ${manual_mine_rate:.2f}/click")
         else:
             manual_upgrade_message.set_text("Insufficient resources.")
-    else:
+    if manual_upgrade_level >= max_upgrade_level:
         manual_upgrade_message.set_text("Max tier reached.")
+        manual_upgrade_cost_label.hide()
+        manual_upgrade_button.hide()
 
 def draw_crypto_screen(screen, events, ui_manager):
     global mining, earnings
