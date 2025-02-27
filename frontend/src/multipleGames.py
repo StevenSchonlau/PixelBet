@@ -1,12 +1,11 @@
 import pygame
 import pygame_gui
-import datetime
-import random
+from pygame_gui.elements import UIButton, UILabel, UIScrollingContainer
 from constants import *
 
 # Global variables
 back_button = None
-confirm_button = None  # Declare confirm_button as a global variable
+confirm_button = None
 race_timer_label = None
 message_label = None
 racing_phase = False
@@ -26,27 +25,35 @@ selected_derbies = []
 def prompt_user_for_derbies(ui_manager):
     """Prompts the user to select derbies to display."""
     ui_manager.clear_and_reset()
-    global derby_buttons, confirm_button  # Declare derby_buttons and confirm_button as global
+    global derby_buttons, confirm_button, selected_derbies
+
+    # Reset the selected derbies list
+    selected_derbies = []
 
     derby_buttons = []
 
     y_offset = 150
     spacing = 20
 
-    # Create buttons for each derby
     for derby in DERBY_NAMES:
-        button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((200, y_offset), (400, 40)),
+        UILabel(
+            relative_rect=pygame.Rect((50, y_offset), (300, 40)),
             text=derby,
             manager=ui_manager,
-            object_id="#derby-button",
+            object_id=f"#label-{derby.replace(' ', '-').lower()}"
+        )
+        button = UIButton(
+            relative_rect=pygame.Rect((360, y_offset), (100, 40)),
+            text="Select",
+            manager=ui_manager,
+            object_id=f"#select-button-{derby.replace(' ', '-').lower()}"
         )
         derby_buttons.append(button)
         y_offset += 40 + spacing
 
-    confirm_button = pygame_gui.elements.UIButton(
+    confirm_button = UIButton(
         relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100), (200, 50)),
-        text="Confirm Selection",
+        text="Confirm",
         manager=ui_manager,
         object_id="#confirm-button"
     )
@@ -54,22 +61,30 @@ def prompt_user_for_derbies(ui_manager):
 def initialize_games(ui_manager):
     """Initializes the multiple games screen with selected derbies."""
     ui_manager.clear_and_reset()
-    global back_button, game_buttons
+    global back_button
 
-    x_offset = 50
+    container = UIScrollingContainer(
+        relative_rect=pygame.Rect((50, 50), (700, 500)),
+        manager=ui_manager,
+        container=ui_manager.root_container,  # Use root_container instead of get_container
+        anchors={'left': 'left',
+                 'right': 'right',
+                 'top': 'top',
+                 'bottom': 'bottom'}
+    )
+
+    y_offset = 0
     for derby in selected_derbies:
-        game_data = {
-            "name": derby,
-            "button": pygame_gui.elements.UILabel(
-                relative_rect=pygame.Rect((x_offset, 20), (200, 40)),
-                text=derby,
-                manager=ui_manager
-            )
-        }
-        games[derby] = game_data
-        x_offset += 220
+        UILabel(
+            relative_rect=pygame.Rect((0, y_offset), (container.relative_rect.width, 40)),  # Use relative_rect.width
+            text=derby,
+            manager=ui_manager,
+            container=container,
+            object_id=f"#label-{derby.replace(' ', '-').lower()}"
+        )
+        y_offset += 50
 
-    back_button = pygame_gui.elements.UIButton(
+    back_button = UIButton(
         relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
         text="Back",
         manager=ui_manager,
@@ -84,14 +99,17 @@ def draw_multiple_games_screen(screen, events, ui_manager):
             if event.ui_element == back_button:
                 return "home"
             elif event.ui_element == confirm_button:
-                for button in derby_buttons:
-                    if button.check_pressed():
-                        selected_derbies.append(button.text)
                 initialize_games(ui_manager)
             else:
-                for game_id, game_data in games.items():
-                    if event.ui_element == game_data["button"]:
-                        handle_game_selection(game_id)
+                for button in derby_buttons:
+                    if event.ui_element == button:
+                        derby_name = button.object_ids[0].replace("#select-button-", "").replace("-", " ").title()
+                        if derby_name in selected_derbies:
+                            selected_derbies.remove(derby_name)
+                            button.set_text("Select")
+                        else:
+                            selected_derbies.append(derby_name)
+                            button.set_text("Remove")
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
