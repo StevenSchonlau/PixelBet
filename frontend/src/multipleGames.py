@@ -1,6 +1,6 @@
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIButton, UILabel, UIScrollingContainer
+from pygame_gui.elements import UIButton, UILabel, UIScrollingContainer, UIPanel
 from constants import *
 
 # Global variables
@@ -59,36 +59,72 @@ def prompt_user_for_derbies(ui_manager):
     )
 
 def initialize_games(ui_manager):
-    """Initializes the multiple games screen with selected derbies."""
+    """Initializes the multiple games screen with selected derbies in a scrollable view."""
     ui_manager.clear_and_reset()
     global back_button
 
+    # Set fixed dimensions for the scrolling container
+    container_width = 700
+    container_height = 490
+    panel_height = 160  # Height for each game panel
+
+    total_content_height = len(selected_derbies) * panel_height  # Compute total height needed
+
+    # Create a scrolling container that will hold all the game panels
     container = UIScrollingContainer(
-        relative_rect=pygame.Rect((50, 50), (700, 500)),
+        relative_rect=pygame.Rect((50, 50), (container_width, container_height)),  # Visible area
         manager=ui_manager,
-        container=ui_manager.root_container,  # Use root_container instead of get_container
-        anchors={'left': 'left',
-                 'right': 'right',
-                 'top': 'top',
-                 'bottom': 'bottom'}
+        container=ui_manager.root_container,
+        anchors={'left': 'left', 'right': 'right', 'top': 'top', 'bottom': 'bottom'},
+        starting_height=1
     )
+
+    # Ensure the container's virtual size is large enough to fit all games
+    container.set_scrollable_area_dimensions((container_width - 20, max(container_height, total_content_height)))
 
     y_offset = 0
     for derby in selected_derbies:
-        UILabel(
-            relative_rect=pygame.Rect((0, y_offset), (container.relative_rect.width, 40)),  # Use relative_rect.width
-            text=derby,
+        # Create a container for each game inside the scrolling container
+        game_container = UIPanel(
+            relative_rect=pygame.Rect((0, y_offset), (container_width - 40, 150)),
             manager=ui_manager,
             container=container,
-            object_id=f"#label-{derby.replace(' ', '-').lower()}"
+            starting_height=1
         )
-        y_offset += 50
 
+        # Derby name label
+        UILabel(
+            relative_rect=pygame.Rect((10, 10), (game_container.relative_rect.width - 100, 30)),
+            text=derby,
+            manager=ui_manager,
+            container=game_container
+        )
+
+        # Close (X) button
+        hide_button = UIButton(
+            relative_rect=pygame.Rect((game_container.relative_rect.width - 60, 10), (50, 30)),
+            text="X",
+            manager=ui_manager,
+            container=game_container,
+            object_id=f"#hide-button-{derby.replace(' ', '-').lower()}"
+        )
+
+        # Focus button
+        focus_button = UIButton(
+            relative_rect=pygame.Rect((game_container.relative_rect.width - 120, 10), (50, 30)),
+            text="Focus",
+            manager=ui_manager,
+            container=game_container,
+            object_id=f"#focus-button-{derby.replace(' ', '-').lower()}"
+        )
+
+        y_offset += panel_height  # Move down for the next panel
+
+    # Back button (outside of the scrolling container)
     back_button = UIButton(
         relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
         text="Back",
-        manager=ui_manager,
-        object_id="#back-button",
+        manager=ui_manager
     )
 
 def draw_multiple_games_screen(screen, events, ui_manager):
@@ -100,6 +136,14 @@ def draw_multiple_games_screen(screen, events, ui_manager):
                 return "home"
             elif event.ui_element == confirm_button:
                 initialize_games(ui_manager)
+            elif event.ui_element.object_ids and event.ui_element.object_ids[0].startswith("#hide-button-"):
+                derby_name = event.ui_element.object_ids[0].replace("#hide-button-", "").replace("-", " ").title()
+                selected_derbies.remove(derby_name)
+                initialize_games(ui_manager)  # Re-render the screen after removing the game
+            elif event.ui_element.object_ids and event.ui_element.object_ids[0].startswith("#focus-button-"):
+                derby_name = event.ui_element.object_ids[0].replace("#focus-button-", "").replace("-", " ").title()
+                active_game = derby_name
+                return "single_game"
             else:
                 for button in derby_buttons:
                     if event.ui_element == button:
