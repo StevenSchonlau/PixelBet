@@ -13,6 +13,7 @@ from profileView import draw_view_profile, init_profile_view
 from crypto import initialize_crypto, draw_crypto_screen
 from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
+from leaderboard import draw_leaderboard_page, init_leaderboard_page
 import multipleGames
 
 pygame.init()
@@ -65,6 +66,11 @@ def main():
                     init_friends_page(ui_manager)
                     initialized = "friends"
                 selected_game = draw_friends_page(screen, events, ui_manager, selected_game)
+            elif selected_game == "Leaderboard":
+                if initialized != "leaderboard":
+                    init_leaderboard_page(ui_manager)
+                    initialized = "leaderboard"
+                selected_game = draw_leaderboard_page(screen, events, ui_manager, selected_game)
             elif selected_game == "crypto":
                 if initialized != "crypto":
                     initialize_crypto(ui_manager)

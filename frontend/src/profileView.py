@@ -117,6 +117,7 @@ def draw_view_profile_button(ui_manager):
         manager=ui_manager,
         object_id="ViewProfileButton",
     )
+    return button
 
 
 def get_center(text):
