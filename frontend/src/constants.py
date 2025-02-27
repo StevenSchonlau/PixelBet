@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 from user_session import UserSession
 import requests
 
@@ -26,13 +27,27 @@ FONT = pygame.font.Font(FONT_PATH, 24)
 SERVER_URL="http://localhost:5000/"
 
 
+def draw_button(text, ui_manager, x, y):
+    text_surface = FONT.render(text, True, WHITE)
+    button_width = text_surface.get_width() + 40
+    button_height = text_surface.get_height() + 20
+    button_x = (SCREEN_WIDTH // 8) * x
+    button_y = (SCREEN_HEIGHT // 8) * y
+    
+    return pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
+        text=text,
+        manager=ui_manager,
+    )
+
+
 def get_profile():
     session = UserSession()
     current_user = session.get_user()
 
     response = requests.get(f"{SERVER_URL}/profile/{current_user}")
     if response.status_code == 200:
-        print(response.json())
+        return response.json()
     else:
         print(f"Error: {response.status_code}, {response.text}")
     
@@ -80,3 +95,9 @@ class Sprite(pygame.sprite.Sprite):
             self.index = (self.index + 1) % len(self.frames)
             self.image = self.frames[self.index]
             self.frame_counter = 0
+
+
+class User:
+    def __init__(self, username, id):
+        self.username = username
+        self.id = id

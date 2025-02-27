@@ -105,20 +105,6 @@ def draw_view_profile_button(ui_manager):
     )
 
 
-def draw_button(text, ui_manager, x, y):
-    text_surface = FONT.render(text, True, WHITE)
-    button_width = text_surface.get_width() + 40
-    button_height = text_surface.get_height() + 20
-    button_x = (SCREEN_WIDTH // 8) * x
-    button_y = (SCREEN_HEIGHT // 8) * y
-    
-    return pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
-        text=text,
-        manager=ui_manager,
-    )
-
-
 def get_center(text):
     text_surface = FONT.render(text, True, WHITE)
     button_width = text_surface.get_width() + 40

@@ -43,7 +43,6 @@ class User(db.Model):
         """Returns a list of accepted friends (i.e. requests that are not pending)"""
         sent = self.sent_requests.filter_by(pending=False).all()
         received = self.received_requests.filter_by(pending=False).all()
-        # For sent requests, the friend is the receiver; for received, the friend is the requester.
         return [assoc.receiver for assoc in sent] + [assoc.requester for assoc in received]
 
     @property
@@ -78,11 +77,6 @@ class User(db.Model):
         request = self.received_requests.filter_by(user_id=friend.id, pending=True).first()
         if request:
             request.pending = False
-            # Create reciprocal record if it doesn't already exist
-            reciprocal = self.sent_requests.filter_by(friend_id=friend.id, pending=False).first()
-            if not reciprocal:
-                new_record = FriendAssociation(user_id=self.id, friend_id=friend.id, pending=False)
-                db.session.add(new_record)
             db.session.commit()
             return True
         return False

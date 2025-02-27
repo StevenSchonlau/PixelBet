@@ -9,6 +9,33 @@ import uuid
 friends_bp = Blueprint('friends', __name__)
 
 
+
+@friends_bp.route('/search/<string:username>', methods=['GET'])
+def search_for_friend(username):
+    friend = User.query.filter_by(username=str(username)).first()
+    if friend:
+        return jsonify({"username": friend.username, "id": friend.id}), 200
+    return jsonify({"message": "user not found"}), 400
+
+@friends_bp.route('/friends/<uuid:user_id>', methods=['GET'])
+def get_friends(user_id):
+    user = User.query.filter_by(id=str(user_id)).first()
+
+    try:
+        friends = user.friends
+        print(friends)
+        if friends:
+            friend_data = [{
+                "username": friend.username,
+                "id": friend.id
+            } for friend in friends]
+            return jsonify(friend_data), 200
+        return jsonify({"message": "No friends found"}), 201
+    except:
+        return jsonify({"message": "Failed"}), 400
+        
+
+
 @friends_bp.route('/is-friend/<uuid:user_id>/<uuid:friend_id>', methods=['GET'])
 def is_friend(user_id, friend_id):
     user = User.query.filter_by(id=str(user_id)).first()
@@ -50,10 +77,11 @@ def get_pending_sent(user_id):
 
         if pending_friends:
             pending_data = [{
-                "username": friend.username
+                "username": friend.username,
+                "id": friend.id
             } for friend in pending_friends]
             return jsonify(pending_data), 200
-        return jsonify({"message": "No pending requests"}), 200
+        return jsonify({"message": "No pending requests"}), 201
     except:
         return jsonify({"message": "Failed"}), 400
 
@@ -71,10 +99,11 @@ def get_pending_received(user_id):
 
         if pending_friends:
             pending_data = [{
-                "username": friend.username
+                "username": friend.username,
+                "id": friend.id
             } for friend in pending_friends]
             return jsonify(pending_data), 200
-        return jsonify({"message": "No pending requests"}), 200
+        return jsonify({"message": "No pending requests"}), 201
     except:
         return jsonify({"message": "Failed"}), 400
 
