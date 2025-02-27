@@ -3,6 +3,9 @@ import pygame_gui
 import datetime
 import random
 from constants import *
+from login import get_user  # Replace 'login' with the actual module name
+BASE_URL = SERVER_URL
+USER_ID = get_user()
 
 # Global variables
 back_button = None
@@ -17,13 +20,52 @@ showing_history = False
 winner_announced = False
 bets_placed = []
 bet_history = []
-user_balance = 1000
+net_worth = None
 horses = []
 horse_positions = {}
 winning_horse = None
 table_elements = {}
 horse_bets = {}
 pending_bets = {}  
+
+def fetch_net_worth():
+    """Fetches the user's net worth from the backend API."""
+    global USER_ID, BASE_URL
+    BASE_URL = SERVER_URL
+    USER_ID = get_user()
+    try:
+        response = requests.get(f"{BASE_URL}/game/get-net-worth/{get_user()}")
+        if response.status_code == 200:
+            data = response.json()
+            print(f"🔄 Fetched net worth: ${data['net_worth']}")
+
+            return(float(data.get('net_worth', 0.0)))
+        else:
+            print(f"⚠️ Failed to fetch net worth: {response.json()}")
+            return 0
+    except Exception as e:
+        print(f"❌ Error fetching net worth: {str(e)}")
+        return 0
+
+def update_net_worth(new_balance):
+    """Updates the user's net worth on the backend API."""
+    BASE_URL = SERVER_URL
+    USER_ID = get_user()
+    if not USER_ID:
+        print("❌ No user logged in!")
+        return
+
+    try:
+        response = requests.post(
+            f"{BASE_URL}/game/update-net-worth/{USER_ID}",
+            json={"net_worth": new_balance}
+        )
+        if response.status_code == 200:
+            print(f"✅ Net worth updated successfully: ${new_balance}")
+        else:
+            print(f"⚠️ Failed to update net worth: {response.json()}")
+    except Exception as e:
+        print(f"❌ Error updating net worth: {str(e)}")
 
 
 def clear_table_elements():
@@ -165,7 +207,7 @@ def draw_betting_table(ui_manager):
 
 def place_bet(horse_name, bet_amount, horse_odds):
     """Stores the bet details and deducts from user balance for new bets only."""
-    global user_balance, bet_history, bets_placed
+    global bet_history, bets_placed, net_worth
     print(bet_amount)
     if bet_amount <= 0:
         return "Error: Bet amount must be greater than 0!"
@@ -182,10 +224,10 @@ def place_bet(horse_name, bet_amount, horse_odds):
         print(bet_difference)
 
         # Ensure the user has enough funds if increasing bet
-        if bet_difference > user_balance:
+        if bet_difference > net_worth:
             return "Error: Insufficient funds!"
 
-        user_balance -= bet_difference  # Deduct or refund balance difference
+        net_worth -= bet_difference  # Deduct or refund balance difference
         existing_bet["amount"] = bet_amount  # Update bet amount
 
         # **Update bet history to reflect changes**
@@ -198,10 +240,10 @@ def place_bet(horse_name, bet_amount, horse_odds):
         return "Bet updated successfully!"
     else:
         # **New bet: Ensure enough funds**
-        if bet_amount > user_balance:
+        if bet_amount > net_worth:
             return "Error: Insufficient funds!"
 
-        user_balance -= bet_amount  # Deduct balance
+        net_worth -= bet_amount # Deduct balance
 
         # Store new bet
         bet_details = {
@@ -227,6 +269,8 @@ def initialize_game(ui_manager):
     global back_button, history_toggle_button, bet_buttons, bet_amount_entry
     global message_label, race_timer_label, race_start_time, horses
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets
+    global net_worth
+    net_worth = fetch_net_worth()
     # Clear old UI elements
     ui_manager.clear_and_reset()
 
@@ -288,13 +332,13 @@ def initialize_game(ui_manager):
 
 def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
-    global user_balance, bet_history, race_start_time, bets_placed, message_label, winner_announced
+    global bet_history, race_start_time, bets_placed, message_label, winner_announced, net_worth
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets
     draw_background(screen)
 
     # Show game and balance info
     game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)
-    balance_text = FONT.render(f"Balance: ${user_balance:.2f}", True, WHITE)
+    balance_text = FONT.render(f"Balance: ${net_worth:.2f}", True, WHITE)
     screen.blit(game_text, (SCREEN_WIDTH // 2 - game_text.get_width() // 2, 50))
     screen.blit(balance_text, (500, 10))
 
@@ -323,9 +367,10 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         for bet in bets_placed:
             if bet["horse"] == winning_horse:
                 winnings = bet["amount"] * bet["odds"]
-                user_balance += winnings
+                net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
+                update_net_worth(net_worth)
         print(bets_placed)
 
         bets_placed.clear()  # Clear bets only after processing
@@ -365,31 +410,43 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
     for event in events:
         if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-                for i, horse in enumerate(horses):
-                    horse_name = horse["name"]
-                    input_field = table_elements[f"bet_input_{i}"]
+            for i, horse in enumerate(horses):
+                horse_name = horse["name"]
+                input_field = table_elements[f"bet_input_{i}"]
 
-                    # Ensure the text input is numeric
-                    bet_amount = input_field.get_text()
+                # Get user input
+                bet_amount = input_field.get_text()
 
-                    if bet_amount == "":
-                        pending_bets[horse_name] = 0
-                    elif bet_amount.isdigit():
-                        bet_amount = int(bet_amount)
+                # ✅ Allow empty input (reset bet)
+                if bet_amount == "":
+                    pending_bets[horse_name] = 0.0
+                    continue
 
-                        # Ensure bet does not exceed balance + existing bet
-                        max_possible_bet = user_balance + horse_bets.get(horse_name, 0)
-                        if bet_amount > max_possible_bet:
-                            input_field.set_text(str(pending_bets[horse_name]))  # Reset input
-                            message_label.set_text("Error: Insufficient funds!")
-                        else:
-                            pending_bets[horse_name] = bet_amount  # Store in pending bets
-                            input_field.set_text(str(pending_bets[horse_name]))
-                    else:
-                        input_field.set_text(str(pending_bets[horse_name]))
+                # ✅ Check if input is a valid number (integer or float)
+                try:
+                    float_bet_amount = float(bet_amount)  # Convert input to float
+                except ValueError:
+                    input_field.set_text(str(pending_bets[horse_name]))  # Reset input
+                    continue  # Skip invalid input
+
+                # ✅ Ensure bet does not exceed available balance
+                max_possible_bet = net_worth + horse_bets.get(horse_name, 0.0)
+                if float_bet_amount > max_possible_bet:
+                    input_field.set_text(str(pending_bets[horse_name]))  # Reset input
+                    message_label.set_text("Error: Insufficient funds!")
+                else:
+                    # ✅ Only update input if necessary to prevent cursor jumping
+                    if str(pending_bets[horse_name]) != bet_amount:
+                        pending_bets[horse_name] = float_bet_amount  # Store the valid float bet
+
+
+                    
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.type == pygame.QUIT:
+                print("who has priority ? game?")
             if event.ui_element == back_button:
                 print("Returning to home screen")
+                update_net_worth(net_worth)
                 return None  # Go back to home
             
             if event.ui_element == history_toggle_button:
@@ -412,7 +469,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
                 if event.ui_element == table_elements[f"bet_increment_{i}"]:
                     if not racing_phase:
-                        max_possible_bet = user_balance + horse_bets.get(horse_name, 0)
+                        max_possible_bet = net_worth + horse_bets.get(horse_name, 0)
                         if pending_bets[horse_name] < max_possible_bet:
                             pending_bets[horse_name] += 1
                             table_elements[f"bet_input_{i}"].set_text(str(pending_bets[horse_name]))

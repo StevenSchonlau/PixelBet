@@ -44,6 +44,7 @@ def main():
         for event in events:
             #print(event)
             if event.type == pygame.QUIT:
+                print ("main quit")
                 running = False
             ui_manager.process_events(event)
 
