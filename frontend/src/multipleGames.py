@@ -124,8 +124,8 @@ def draw_multiple_games_screen(screen, events, ui_manager):
     draw_background(screen)
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            # for obj_id in event.ui_element.object_ids:
-            #     print(obj_id)
+            for obj_id in event.ui_element.object_ids:
+                print(obj_id)
             if event.ui_element == back_button:
                 return "home"
             elif event.ui_element == confirm_button:
@@ -137,9 +137,13 @@ def draw_multiple_games_screen(screen, events, ui_manager):
                     selected_derbies.remove(derby_name)
                     # Re-render the page by initializing games again
                     initialize_games(ui_manager)
-            elif event.ui_element.object_ids and event.ui_element.object_ids[0].startswith("#focus-button-"):
-                derby_name = event.ui_element.object_ids[0].replace("#focus-button-", "").replace("-", " ").title()
+            elif event.ui_element.object_ids[0].startswith("#root") and event.ui_element.object_ids[3].startswith("#focus-button-"):
+                derby_name = event.ui_element.object_ids[3].replace("#focus-button-", "").replace("-", " ").title()
                 active_game = derby_name
+                for sd in selected_derbies :
+                    if (sd != derby_name) :
+                        selected_derbies.remove(sd)
+                initialize_games(ui_manager)
                 return "single_game"
             else:
                 for button in derby_buttons:
