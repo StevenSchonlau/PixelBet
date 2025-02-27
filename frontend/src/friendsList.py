@@ -260,7 +260,7 @@ def add_friend(username):
         response = requests.post(f"{SERVER_URL}/friend-request/{curr_player.id}/{friend.id}")
         if response.status_code == 200:
             print("success")
-            error = "Success!"
+            error = "Sent!"
             return True
         else:
             print("Error:", response.status_code, response.json())
@@ -275,7 +275,7 @@ def remove_friend(friend_id):
     global curr_player, error
     response = requests.post(f"{SERVER_URL}/remove-friend/{curr_player.id}/{friend_id}")
     if response.status_code == 200:
-        print("success")
+        print("Removed!")
         error = None
         return True
     else:
@@ -402,7 +402,6 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
         if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
             if event.ui_element == ui_dict["search_box"]:
                 search_text = event.text  # The text entered by the user
-                print("User pressed Enter in the search box:", search_text)
                 friend = search_player(search_text)
                 if "search_result" in ui_dict:
                     ui_dict["search_result"].kill()

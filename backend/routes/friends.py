@@ -59,7 +59,7 @@ def request_friend(user_id, friend_id):
     try:
         result = user.send_friend_request(friend)
         if not result:
-            return jsonify({'message': 'A request has already been sent'}), 400
+            return jsonify({'message': 'A request has already been sent\nOr already friends'}), 400
         return jsonify({'message': 'Request sent!'}), 200
     except:
         return jsonify({"message": "Failed"}), 400
