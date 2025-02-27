@@ -3,7 +3,7 @@ import requests
 from constants import SERVER_URL
 from profile import Profile
 import json
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
+from constants import *
 import pygame
 import pygame_gui
 from signup import get_user, set_back_to_login
@@ -55,7 +55,7 @@ def send_reset_email(email):
     return response
 
 def draw_password_reset_screen(screen, events, ui_manager):
-    screen.fill(BLACK)
+    draw_background(screen)
     title_text = FONT.render("Password Reset", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
@@ -80,7 +80,7 @@ def draw_password_reset_screen(screen, events, ui_manager):
             if event.ui_element == send_btn and not sent:
                 print("sending")
                 error_message = "Loading..."
-                screen.fill(BLACK) #to cover last error message
+                draw_background(screen) #to cover last error message
                 title_text = FONT.render("Password Reset", True, WHITE)
                 screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 

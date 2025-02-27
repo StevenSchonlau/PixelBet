@@ -18,6 +18,11 @@ def get_user():
 
 #failed login
 error_message = ""
+def clear_user():
+    global user
+    user = None
+    global error_message
+    error_message = ""
 
 signup_screen = False
 def get_sign_up():

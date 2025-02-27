@@ -3,7 +3,7 @@ import requests
 from constants import SERVER_URL
 from profile import Profile
 import json
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
+from constants import *
 import pygame
 import pygame_gui
 
@@ -90,7 +90,7 @@ def initialize_signup(ui_manager):
     )
 
 def draw_signup_screen(screen, events, ui_manager):
-    screen.fill(BLACK)
+    draw_background(screen)
     title_text = FONT.render("Sign Up", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
@@ -109,7 +109,7 @@ def draw_signup_screen(screen, events, ui_manager):
                 back_to_login = True
             if event.ui_element == sign_up_btn:
                 error_message = "Loading..."
-                screen.fill(BLACK) #to cover last error message
+                draw_background(screen) #to cover last error message
                 title_text = FONT.render("Sign Up", True, WHITE)
                 screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
                 error_message_text = FONT.render(error_message, True, WHITE)
