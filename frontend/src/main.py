@@ -13,6 +13,7 @@ from profileView import draw_view_profile, init_profile_view
 from crypto import initialize_crypto, draw_crypto_screen
 from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
+import multipleGames
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -81,6 +82,17 @@ def main():
                 selected_game = draw_underDev_screen(screen, events, ui_manager, selected_game)
 
                 if selected_game == "home":  # If "Back" is pressed in crypto, return to home
+                    selected_game = None
+                    initialize_home(ui_manager)
+                    initialized = "home"
+
+            elif selected_game == "multiple_games":
+                if initialized != "multiple_games":
+                    multipleGames.prompt_user_for_derbies(ui_manager)
+                    initialized = "multiple_games"
+                multiple_games_result = multipleGames.draw_multiple_games_screen(screen, events, ui_manager)
+                
+                if multiple_games_result == "home":  # If "Back" is pressed in multiple games, return to home
                     selected_game = None
                     initialize_home(ui_manager)
                     initialized = "home"
