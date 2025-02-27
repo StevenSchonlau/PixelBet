@@ -370,7 +370,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
-                update_net_worth(net_worth)
         print(bets_placed)
 
         bets_placed.clear()  # Clear bets only after processing
@@ -382,6 +381,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         race_start_time = datetime.datetime.now()
         racing_phase = False  # Return to betting phase
         winner_announced = False
+        update_net_worth(net_worth)
         initialize_game(ui_manager)  # Reset horses
     if racing_phase == False:
         race_timer_label.set_text(f"Next Race: {time_remaining}s")
