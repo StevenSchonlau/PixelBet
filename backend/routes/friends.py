@@ -27,7 +27,8 @@ def get_friends(user_id):
         if friends:
             friend_data = [{
                 "username": friend.username,
-                "id": friend.id
+                "id": friend.id,
+                "net_worth": friend.net_worth
             } for friend in friends]
             return jsonify(friend_data), 200
         return jsonify({"message": "No friends found"}), 201
