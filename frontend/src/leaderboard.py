@@ -39,7 +39,7 @@ def get_players(ui_manager):
     global error
     players = []
 
-    response = requests.get(f"{SERVER_URL}/all-net")
+    response = requests.get(f"{SERVER_URL}/game/all-net")
     if response.status_code == 200:
         users = response.json()
         for user in users:
