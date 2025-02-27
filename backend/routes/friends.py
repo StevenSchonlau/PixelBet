@@ -94,8 +94,8 @@ def get_pending_received(user_id):
     try:
         pending_friends = []
         for request in requests:
-            print(request.friend_id)
-            pending_friends.append(User.query.filter_by(id=request.friend_id).first())
+            print(request.user_id)
+            pending_friends.append(User.query.filter_by(id=request.user_id).first())
 
         if pending_friends:
             pending_data = [{

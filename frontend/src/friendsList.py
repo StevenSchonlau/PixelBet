@@ -16,8 +16,7 @@ curr_player = None
 def refresh_data(ui_manager):
     get_all_players()
     get_friends(ui_manager)
-    get_sent()
-    get_rec()
+    get_rec(ui_manager)
 
 
 def draw_home_friends_button(ui_manager):
@@ -78,6 +77,14 @@ def draw_requests_panel(ui_manager):
         manager=ui_manager,
         object_id="#requests_panel"
     )
+    scroll_container_rect = pygame.Rect(0, 40, requests_panel_rect.width, requests_panel_rect.height - 40)
+    requests_scroll = pygame_gui.elements.UIScrollingContainer(
+        relative_rect=scroll_container_rect,
+        starting_height=1,
+        manager=ui_manager,
+        container=requests_panel,
+        object_id="#requests_scroll"
+    )
     requests_label = pygame_gui.elements.UILabel(
         relative_rect=pygame.Rect((10, 10), (requests_panel_rect.width - 20, 30)),
         text="Friend Requests",
@@ -85,6 +92,7 @@ def draw_requests_panel(ui_manager):
         container=requests_panel,
         object_id="#panel_label"
     )
+    ui_dict["requests_scroll"] = requests_scroll
     return requests_panel
 
 def draw_friends_panel(ui_manager):
@@ -92,11 +100,22 @@ def draw_friends_panel(ui_manager):
         (SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.2),
         (SCREEN_WIDTH * 0.9, SCREEN_HEIGHT * 0.4)
     )
+    friends_list_scroll_rect = pygame.Rect(
+        (SCREEN_WIDTH*0.05, SCREEN_HEIGHT*0.2),
+        (SCREEN_WIDTH*0.9, SCREEN_HEIGHT*0.2)
+    )
     friends_list_panel = pygame_gui.elements.UIPanel(
         relative_rect=friends_list_panel_rect,
         starting_height=1,
         manager=ui_manager,
         object_id="#friends_list_panel"
+    )
+    friends_list_scroll = pygame_gui.elements.UIScrollingContainer(
+        relative_rect=friends_list_panel_rect,
+        starting_height=1,
+        manager=ui_manager,
+        container=friends_list_panel,
+        object_id="#friends_list_scroll"
     )
     friends_label = pygame_gui.elements.UILabel(
         relative_rect=pygame.Rect((10, 10), (friends_list_panel_rect.width - 20, 30)),
@@ -105,6 +124,7 @@ def draw_friends_panel(ui_manager):
         container=friends_list_panel,
         object_id="#panel_label"
     )
+    ui_dict["friends_list_scroll"] = friends_list_scroll
     return friends_list_panel
 
 
@@ -127,6 +147,9 @@ def init_friends_page(ui_manager):
     ui_dict["search_panel"] = search_panel
     ui_dict["friends_list_panel"] = friends_list_panel
     ui_dict["friends"] = []
+    ui_dict["request_labels"] = []
+    ui_dict["request_accept"] = []
+    ui_dict["request_decline"] = []
     refresh_data(ui_manager)
 
 
@@ -149,6 +172,7 @@ def get_friends(ui_manager):
     user_id = get_profile()['id']
     response = requests.get(f"{SERVER_URL}/friends/{user_id}")
     if response.status_code == 200:
+        friends.clear()
         for friend in response.json():
             friend_obj = User(friend["username"], friend["id"])
             friends.append(friend_obj)
@@ -162,12 +186,18 @@ def get_friends(ui_manager):
     for button in ui_dict["friends"]:
         button.kill()
     ui_dict["friends"] = []
-    for friend in friends:
+
+    container_width = SCREEN_WIDTH * .7
+    button_height = 40
+    start_y = 0
+
+    for i, friend in enumerate(friends):
+        y = start_y + i * (button_height + 10)
         result_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH*0.4*.05, SCREEN_HEIGHT*0.2*.6), (SCREEN_WIDTH*0.4*.9, SCREEN_HEIGHT*0.2*.3)),
+            relative_rect=pygame.Rect((20, y), (container_width, button_height)),
             text=f"{friend.username}",
             manager=ui_manager,
-            container=ui_dict["friends_list_panel"],
+            container=ui_dict["friends_list_scroll"].scrollable_container,
             object_id="#friend_button"
         )
         ui_dict["friends"].append(result_button)
@@ -224,23 +254,86 @@ def get_sent():
         error = response.json()["message"]
         return False
 
-def get_rec():
+def get_rec(ui_manager):
     global error, rec_pending, curr_player
+    rec_pending.clear()
     response = requests.get(f"{SERVER_URL}/pending-received/{curr_player.id}")
     if response.status_code == 200:
         for player in response.json():
             player_obj = User(player["username"], player["id"])
             rec_pending.append(player_obj)
         error = None
-        return True
     elif response.status_code == 201:
         error = None
     else:
         print("Error:", response.status_code, response.json())
         error = response.json()["message"]
-        return False
+        return
 
+    for button in ui_dict["request_labels"]:
+        button.kill()
+    ui_dict["request_labels"] = []
+    for button in ui_dict["request_accept"]:
+        button.kill()
+    ui_dict["request_accept"] = []
+    for button in ui_dict["request_decline"]:
+        button.kill()
+    ui_dict["request_decline"] = []
+    
+    start_y = 10
+    button_height = 40
+    padding = 10
+    scroll_container = ui_dict["requests_scroll"].scrollable_container
+    container_width = scroll_container.get_size()[0]
+    
+    for i, user in enumerate(rec_pending):
+        y = start_y + i * (button_height + padding)
+        user_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((10, y), (container_width - 200, button_height)),
+            text=user.username,
+            manager=ui_manager,
+            container=scroll_container,
+            object_id="#requests_label"
+        )
+        accept_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((container_width - 200 + 10, y), (70, button_height)),
+            text="Accept",
+            manager=ui_manager,
+            container=scroll_container,
+            object_id="#accept-button"
+        )
+        decline_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((container_width - 200 + 80, y), (70, button_height)),
+            text="Decline",
+            manager=ui_manager,
+            container=scroll_container,
+            object_id="#decline-button"
+        )
+        accept_button.user_id, decline_button.user_id = user.id, user.id
+        ui_dict["request_labels"].append(user_label)
+        ui_dict["request_accept"].append(accept_button)
+        ui_dict["request_decline"].append(decline_button)
 
+    total_height = start_y + len(rec_pending) * (button_height + padding)
+    ui_dict["requests_scroll"].set_scrollable_area_dimensions((container_width, total_height)) 
+
+def reject_request(user_id):
+    global error
+    response = requests.post(f"{SERVER_URL}/reject-request/{curr_player.id}/{user_id}")
+    if response.status_code == 200:
+        error = None
+    else:
+        print("Error:", response.status_code, response.json())
+        error = response.json()["message"]
+
+def accept_request(user_id):
+    global error
+    response = requests.post(f"{SERVER_URL}/accept-request/{curr_player.id}/{user_id}")
+    if response.status_code == 200:
+        error = None
+    else:
+        print("Error:", response.status_code, response.json())
+        error = response.json()["message"]
 
 def draw_friends_page(screen, events, ui_manager, selected_game):
     global error
@@ -280,6 +373,12 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
                         error = "Can't friend yourself!"
                     else:
                         add_friend(text)
+            if event.ui_element in ui_dict["request_accept"]:
+                accept_request(event.ui_element.user_id)
+                refresh_data(ui_manager)
+            elif event.ui_element in ui_dict["request_decline"]:
+                reject_request(event.ui_element.user_id)
+                refresh_data(ui_manager)
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
