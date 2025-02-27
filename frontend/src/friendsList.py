@@ -83,6 +83,7 @@ def draw_requests_panel(ui_manager):
         starting_height=1,
         manager=ui_manager,
         container=requests_panel,
+        allow_scroll_x=False,
         object_id="#requests_scroll"
     )
     requests_label = pygame_gui.elements.UILabel(
@@ -100,21 +101,18 @@ def draw_friends_panel(ui_manager):
         (SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.2),
         (SCREEN_WIDTH * 0.9, SCREEN_HEIGHT * 0.4)
     )
-    friends_list_scroll_rect = pygame.Rect(
-        (SCREEN_WIDTH*0.05, SCREEN_HEIGHT*0.2),
-        (SCREEN_WIDTH*0.9, SCREEN_HEIGHT*0.2)
-    )
     friends_list_panel = pygame_gui.elements.UIPanel(
         relative_rect=friends_list_panel_rect,
         starting_height=1,
         manager=ui_manager,
         object_id="#friends_list_panel"
     )
+    scroll_container_rect = pygame.Rect(0, 40, friends_list_panel_rect.width, friends_list_panel_rect.height - 40)
     friends_list_scroll = pygame_gui.elements.UIScrollingContainer(
-        relative_rect=friends_list_panel_rect,
-        starting_height=1,
+        relative_rect=scroll_container_rect,
         manager=ui_manager,
         container=friends_list_panel,
+        allow_scroll_x=False,
         object_id="#friends_list_scroll"
     )
     friends_label = pygame_gui.elements.UILabel(
@@ -150,6 +148,8 @@ def init_friends_page(ui_manager):
     ui_dict["request_labels"] = []
     ui_dict["request_accept"] = []
     ui_dict["request_decline"] = []
+    ui_dict["view_profile_buttons"] = []
+    ui_dict["remove_buttons"] = []
     refresh_data(ui_manager)
 
 
@@ -171,8 +171,8 @@ def get_friends(ui_manager):
     global error, friends, ui_dict
     user_id = get_profile()['id']
     response = requests.get(f"{SERVER_URL}/friends/{user_id}")
+    friends.clear()
     if response.status_code == 200:
-        friends.clear()
         for friend in response.json():
             friend_obj = User(friend["username"], friend["id"])
             friends.append(friend_obj)
@@ -186,21 +186,49 @@ def get_friends(ui_manager):
     for button in ui_dict["friends"]:
         button.kill()
     ui_dict["friends"] = []
+    for button in ui_dict["remove_buttons"]:
+        button.kill()
+    ui_dict["remove_buttons"] = []
+    for button in ui_dict["view_profile_buttons"]:
+        button.kill()
+    ui_dict["view_profile_buttons"] = []
 
-    container_width = SCREEN_WIDTH * .7
     button_height = 40
     start_y = 0
+    container = ui_dict["friends_list_scroll"].scrollable_container
+    container_width = container.get_size()[0]
 
     for i, friend in enumerate(friends):
         y = start_y + i * (button_height + 10)
-        result_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((20, y), (container_width, button_height)),
+        result_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, y), (container_width - 600, button_height)),
             text=f"{friend.username}",
             manager=ui_manager,
-            container=ui_dict["friends_list_scroll"].scrollable_container,
-            object_id="#friend_button"
+            container=container,
+            object_id="#friend_result"
         )
-        ui_dict["friends"].append(result_button)
+        remove_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((container_width - 220 + 130, y), (70, button_height)),
+            text="Remove",
+            manager=ui_manager,
+            container=container,
+            object_id="#accept-button"
+        )
+        view_profile_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((container_width - 220 + 10, y), (120, button_height)),
+            text="View Profile",
+            manager=ui_manager,
+            container=container,
+            object_id="#decline-button"
+        )
+        view_profile_button.user_id, remove_button.user_id = friend.id, friend.id
+        ui_dict["friends"].append(result_label)
+        ui_dict["view_profile_buttons"].append(view_profile_button)
+        ui_dict["remove_buttons"].append(remove_button)
+
+
+    total_height = start_y + len(friends) * (button_height + 10)
+    ui_dict["friends_list_scroll"].set_scrollable_area_dimensions((container_width, total_height)) 
 
 
 
@@ -237,6 +265,20 @@ def add_friend(username):
     else:
         error = "An error has occurred"
         return False
+
+
+def remove_friend(friend_id):
+    global curr_player, error
+    response = requests.post(f"{SERVER_URL}/remove-friend/{curr_player.id}/{friend_id}")
+    if response.status_code == 200:
+        print("success")
+        error = None
+        return True
+    else:
+        print("Error:", response.status_code, response.json())
+        error = response.json()["message"]
+        return False
+
 
 def get_sent():
     global error, sent_pending, curr_player
@@ -378,6 +420,11 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
                 refresh_data(ui_manager)
             elif event.ui_element in ui_dict["request_decline"]:
                 reject_request(event.ui_element.user_id)
+                refresh_data(ui_manager)
+            elif event.ui_element in ui_dict["view_profile_buttons"]:
+                print(event.ui_element.user_id)
+            elif event.ui_element in ui_dict["remove_buttons"]:
+                remove_friend(event.ui_element.user_id)
                 refresh_data(ui_manager)
 
     ui_manager.update(1 / 60)
