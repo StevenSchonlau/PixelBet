@@ -9,19 +9,6 @@ from user_session import UserSession
 BASEURL = SERVER_URL
 
 
-def get_profile():
-    session = UserSession()
-    current_user = session.get_user()
-
-    response = requests.get(f"{BASEURL}/profile/{current_user}")
-    if response.status_code == 200:
-        print(response.json())
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-    
-    return response.json()
-
-
 def save_profile():
     global username, ui_dict, error
     session = UserSession()
@@ -43,36 +30,6 @@ def save_profile():
     else:
         print("Error:", response.status_code, response.json())
         error = "An error occurred"
-
-
-def load_sprites(sheet, num_frames, row=0, scale=2):
-    frame_width = SPRITE_SIZE
-    frame_height = SPRITE_SIZE
-    frames = []
-    for i in range(num_frames):
-        frame = sheet.subsurface(pygame.Rect(i * frame_width, row * frame_height, frame_width, frame_height))
-        scaled_frame = pygame.transform.scale(frame, (frame_width * scale, frame_height * scale))
-        frames.append(scaled_frame)
-    return frames
-
-
-class Sprite(pygame.sprite.Sprite):
-    def __init__(self, name="", sprite_sheet=None):
-        super().__init__()
-        self.name = name
-        self.frames = load_sprites(sprite_sheet, 8)
-        self.index = 0
-        self.image = self.frames[self.index]
-        self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 8 * 3))
-        self.animation_speed = 5
-        self.frame_counter = 0
-    
-    def update(self):
-        self.frame_counter += 1
-        if self.frame_counter >= self.animation_speed:
-            self.index = (self.index + 1) % len(self.frames)
-            self.image = self.frames[self.index]
-            self.frame_counter = 0
 
 
 all_sprites = {}
@@ -133,7 +90,7 @@ def init_view_profile_ui(ui_manager):
     return {"username": username_field, "back": back_button, "left": left_button, "right": right_button, "save": save_button}
 
 
-def draw_view_profile_button(screen, ui_manager):
+def draw_view_profile_button(ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
     button_width = text_surface.get_width() + 40  # Add padding
     button_height = text_surface.get_height() + 20
@@ -145,20 +102,6 @@ def draw_view_profile_button(screen, ui_manager):
         text="View Profile",
         manager=ui_manager,
         object_id="ViewProfileButton",
-    )
-
-
-def draw_button(text, ui_manager, x, y):
-    text_surface = FONT.render(text, True, WHITE)
-    button_width = text_surface.get_width() + 40
-    button_height = text_surface.get_height() + 20
-    button_x = (SCREEN_WIDTH // 8) * x
-    button_y = (SCREEN_HEIGHT // 8) * y
-    
-    return pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
-        text=text,
-        manager=ui_manager,
     )
 
 
