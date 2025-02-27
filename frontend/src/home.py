@@ -4,6 +4,7 @@ import datetime
 import random
 from constants import *
 from profileView import draw_view_profile_button
+import multipleGames
 
 # List of alternative game names
 GAME_NAMES = [
@@ -54,6 +55,16 @@ def initialize_home(ui_manager):
     )
     button_mapping[crypto_button] = "Mine Crypto"
 
+    # Create "Multiple Games" button
+    multiple_games_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 500), (400, 50)),  # Centered with width 400
+        text="Multiple Games",
+        manager=ui_manager,
+        object_id="#multiple-games-button"
+    )
+    button_mapping[multiple_games_button] = "Multiple Games"
+
+
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
     now = datetime.datetime.now()
@@ -102,6 +113,8 @@ def draw_home_screen(screen, events, ui_manager):
             
             if event.ui_element.text == "Mine Crypto":
                 selected_game = "crypto"
+            elif event.ui_element.text == "Multiple Games":
+                selected_game = "multiple_games"
             elif "Derby" in event.ui_element.text:
                 selected_game = event.ui_element.text
             else:
