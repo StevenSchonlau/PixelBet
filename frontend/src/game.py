@@ -321,7 +321,7 @@ def initialize_game(ui_manager):
     )
 
     history_toggle_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, SCREEN_HEIGHT - 40, 180, 40)),
+        relative_rect=pygame.Rect((0, SCREEN_HEIGHT - 40, 200, 40)),
         text="View Bet History",
         manager=ui_manager,
         object_id="toggle-button"
