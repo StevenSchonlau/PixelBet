@@ -138,6 +138,7 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
             print(text)
             if text == "Back":
                 selected_game = None
+                error = None
             elif text == "<" and active_sprite:
                 active_index = (active_index - 1) % len(all_sprites)
                 active_sprite = all_sprites[active_index]
