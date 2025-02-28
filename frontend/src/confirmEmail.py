@@ -3,7 +3,7 @@ import requests
 from constants import SERVER_URL
 from profile import Profile
 import json
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, WHITE, FONT
+from constants import *
 import pygame
 import pygame_gui
 from signup import get_user, set_back_to_login
@@ -80,7 +80,7 @@ def initialize_confirming(ui_manager):
     )
 
 def draw_confirming_screen(screen, events, ui_manager):
-    screen.fill(BLACK)
+    draw_background(screen)
     title_text = FONT.render("Email Confirmation", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 

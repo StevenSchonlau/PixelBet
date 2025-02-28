@@ -6,6 +6,7 @@ from constants import *
 from profileView import draw_view_profile_button
 from friendsList import draw_home_friends_button
 from leaderboard import draw_leaderboard_button
+from login import clear_user
 import multipleGames
 
 # List of alternative game names
@@ -56,6 +57,15 @@ def initialize_home(ui_manager):
         object_id="#crypto-button",
     )
     button_mapping[crypto_button] = "Mine Crypto"
+
+    #Create "Sign out" button
+    sign_out_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 120), (150, 50)),
+        text="Signout",
+        manager=ui_manager,
+        object_id="sign_out_button",
+    )
+    button_mapping[sign_out_button] = "Signout"
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)
@@ -127,6 +137,8 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = event.ui_element.text
             elif "Leaderboard" in event.ui_element.text:
                 selected_game = event.ui_element.text
+            elif "Signout" in event.ui_element.text:
+                clear_user()
             else:
                 selected_game = "underDev"
             

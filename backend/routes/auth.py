@@ -132,7 +132,7 @@ def confirm_email(user_uuid):
     if user:
         if not user.email_confirmed:
             # Mark the email as confirmed
-            if (datetime.utcnow() - user.sent_time_stamp).seconds > 600:
+            if (datetime.utcnow() - user.sent_time_stamp).seconds > 30:
                 message = "Expired! Click send another one in the app."
             else:
                 user.email_confirmed = True
@@ -140,7 +140,7 @@ def confirm_email(user_uuid):
                 print("success")
                 message = "Your email has been successfully confirmed!"
         else:
-            if (datetime.utcnow() - user.sent_time_stamp).seconds > 600:
+            if (datetime.utcnow() - user.sent_time_stamp).seconds > 30:
                 message = "Expired! But your email is already confirmed."
             else:
                 message = "Your email has already been confirmed."
