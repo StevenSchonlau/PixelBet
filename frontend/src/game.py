@@ -370,10 +370,8 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
-        print(bets_placed)
 
         bets_placed.clear()  # Clear bets only after processing
-        print(bets_placed)
         # Set flag to prevent rerunning
         winner_announced = True
     if time_elapsed >= 30:
@@ -430,7 +428,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                     continue  # Skip invalid input
 
                 # ✅ Ensure bet does not exceed available balance
-                max_possible_bet = net_worth + horse_bets.get(horse_name, 0.0)
+                max_possible_bet = net_worth + sum(bet['amount'] for bet in bets_placed)
                 if float_bet_amount > max_possible_bet:
                     input_field.set_text(str(pending_bets[horse_name]))  # Reset input
                     message_label.set_text("Error: Insufficient funds!")
@@ -442,8 +440,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
                     
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.type == pygame.QUIT:
-                print("who has priority ? game?")
             if event.ui_element == back_button:
                 print("Returning to home screen")
                 update_net_worth(net_worth)
@@ -469,7 +465,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
                 if event.ui_element == table_elements[f"bet_increment_{i}"]:
                     if not racing_phase:
-                        max_possible_bet = net_worth + horse_bets.get(horse_name, 0)
+                        max_possible_bet = net_worth + sum(bet['amount'] for bet in bets_placed)
                         if pending_bets[horse_name] < max_possible_bet:
                             pending_bets[horse_name] += 1
                             table_elements[f"bet_input_{i}"].set_text(str(pending_bets[horse_name]))
