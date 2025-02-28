@@ -383,8 +383,14 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         initialize_game(ui_manager)  # Reset horses
     if racing_phase == False:
         race_timer_label.set_text(f"Next Race: {time_remaining}s")
+
+        note = FONT.render(f"Not available until race starts", True, WHITE)
+        text_rect = note.get_rect(center=(SCREEN_WIDTH // 2, 225))  # Center in the white box
+    
+        # Render the text inside the box
+        screen.blit(note, text_rect)
     else:
-        race_timer_label.set_text(f"Next Derby: {time_remaining}s")
+        race_timer_label.set_text(f"Race beginned: {time_elapsed - 20}s")
 
     # Draw race box
     pygame.draw.rect(screen, WHITE, (50, 100, SCREEN_WIDTH - 100, 150), 2)  # White border
