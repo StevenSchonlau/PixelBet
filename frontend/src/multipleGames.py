@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton, UILabel, UIScrollingContainer, UIPanel
 from constants import *
+import random
 
 # Global variables
 back_button = None
@@ -15,6 +16,12 @@ bet_history = []
 user_balance = 1000
 games = {}
 active_game = None
+horses = [
+    {"name": "Lightning Bolt", "color": "Yellow", "odds": 2.0},
+    {"name": "Thunder Hoof", "color": "Blue", "odds": 3.5},
+    {"name": "Midnight Runner", "color": "Red", "odds": 5.0},
+    {"name": "Golden Mane", "color": "Gold", "odds": 1.8}
+]
 
 # List of Derby names
 DERBY_NAMES = [
@@ -104,12 +111,25 @@ def initialize_games(ui_manager):
         )
         # Focus button
         focus_button = UIButton(
-            relative_rect=pygame.Rect((game_container.relative_rect.width - 120, 10), (50, 30)),
+            relative_rect=pygame.Rect((game_container.relative_rect.width - 160, 10), (90, 30)),
             text="Focus",
             manager=ui_manager,
             container=game_container,
             object_id=f"#focus-button-{derby.replace(' ', '-').lower()}"
         )
+
+        winner = random.choice(horses)
+        winner_text = f"Winner: {winner['name']}"
+
+        UILabel(
+            relative_rect=pygame.Rect((10, 50), (game_container.relative_rect.width - 20, 30)),
+            text=winner_text,
+            manager=ui_manager,
+            container=game_container,
+            object_id=f"#game-status-{derby.replace(' ', '-').lower()}"
+        )
+
+
         games[derby] = game_container  # Store the panel in the games dictionary
         y_offset += panel_height  # Move down for the next panel
 
