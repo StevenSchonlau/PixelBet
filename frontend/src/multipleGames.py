@@ -104,7 +104,7 @@ def initialize_games(ui_manager):
         )
         # Focus button
         focus_button = UIButton(
-            relative_rect=pygame.Rect((game_container.relative_rect.width - 120, 10), (50, 30)),
+            relative_rect=pygame.Rect((game_container.relative_rect.width - 160, 10), (90, 30)),
             text="Focus",
             manager=ui_manager,
             container=game_container,
