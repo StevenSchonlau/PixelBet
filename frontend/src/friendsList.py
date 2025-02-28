@@ -422,6 +422,7 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
             text = event.ui_element.text
             print(text)
             if text == "Back":
+                error = None
                 selected_game = None
             elif text == "Refresh":
                 refresh_data(ui_manager)
