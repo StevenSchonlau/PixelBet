@@ -23,6 +23,9 @@ class User(db.Model):
     email_confirmed = db.Column(db.Boolean, default=False)
     avatar = db.Column(db.String(80))
     net_worth = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
+    counter = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
+    last_login = db.Column(db.DateTime, default=None)
+
 
     sent_requests = db.relationship(
         'FriendAssociation',

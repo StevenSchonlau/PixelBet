@@ -5,7 +5,7 @@ from pygame.locals import *
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, THEME_PATH
 from home import draw_home_screen, initialize_home
 from game import draw_game_screen, initialize_game
-from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset
+from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward
 from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
 from confirmEmail import initialize_confirming, draw_confirming_screen
 from passwordReset import initialize_password_reset, draw_password_reset_screen
@@ -14,6 +14,7 @@ from crypto import initialize_crypto, draw_crypto_screen
 from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
 from leaderboard import draw_leaderboard_page, init_leaderboard_page
+from dailyLogin import draw_popup, initialize_popup
 import multipleGames
 
 pygame.init()
@@ -31,6 +32,7 @@ ui_manager.clear_and_reset()
 initialized = "None"
 current_screen = "login"
 selected_game = None
+login_reward = False
 def main():
     global initialized, current_screen, selected_game
     clock = pygame.time.Clock()
@@ -51,69 +53,76 @@ def main():
         screen.fill(BLACK)  # Clear screen
         
         if get_user() is not None:
-            if selected_game is None:  # Home screen logic
-                if initialized != "home":
-                    initialize_home(ui_manager)
-                    initialized = "home"
-                selected_game = draw_home_screen(screen, events, ui_manager)  # If a game is selected, it will return a value
+            if get_login_reward():
+                #show login_reward
+                if initialized != "dailyLogin":
+                    initialize_popup(ui_manager)
+                    initialized = "dailyLogin"
+                draw_popup(screen, events, ui_manager)
+            else:
+                if selected_game is None:  # Home screen logic
+                    if initialized != "home":
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                    selected_game = draw_home_screen(screen, events, ui_manager)  # If a game is selected, it will return a value
 
-            elif selected_game == "View Profile":
-                if initialized != "profile-view":
-                    init_profile_view(ui_manager)
-                    initialized = "profile-view"
-                selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
-            elif selected_game == "Friends":
-                if initialized != "friends":
-                    init_friends_page(ui_manager)
-                    initialized = "friends"
-                selected_game = draw_friends_page(screen, events, ui_manager, selected_game)
-            elif selected_game == "Leaderboard":
-                if initialized != "leaderboard":
-                    init_leaderboard_page(ui_manager)
-                    initialized = "leaderboard"
-                selected_game = draw_leaderboard_page(screen, events, ui_manager, selected_game)
-            elif selected_game == "crypto":
-                if initialized != "crypto":
-                    initialize_crypto(ui_manager)
-                    initialized = "crypto"
-                crypto_result = draw_crypto_screen(screen, events, ui_manager)
+                elif selected_game == "View Profile":
+                    if initialized != "profile-view":
+                        init_profile_view(ui_manager)
+                        initialized = "profile-view"
+                    selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
+                elif selected_game == "Friends":
+                    if initialized != "friends":
+                        init_friends_page(ui_manager)
+                        initialized = "friends"
+                    selected_game = draw_friends_page(screen, events, ui_manager, selected_game)
+                elif selected_game == "Leaderboard":
+                    if initialized != "leaderboard":
+                        init_leaderboard_page(ui_manager)
+                        initialized = "leaderboard"
+                    selected_game = draw_leaderboard_page(screen, events, ui_manager, selected_game)
+                elif selected_game == "crypto":
+                    if initialized != "crypto":
+                        initialize_crypto(ui_manager)
+                        initialized = "crypto"
+                    crypto_result = draw_crypto_screen(screen, events, ui_manager)
 
-                if crypto_result == "home":  # If "Back" is pressed in crypto, return to home
-                    selected_game = None
-                    initialize_home(ui_manager)
-                    initialized = "home"
-            elif selected_game == "underDev":
-                if initialized != "underDev":
-                    initialize_underDev(ui_manager)
-                    initialized = "underDev"
-                selected_game = draw_underDev_screen(screen, events, ui_manager, selected_game)
+                    if crypto_result == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                elif selected_game == "underDev":
+                    if initialized != "underDev":
+                        initialize_underDev(ui_manager)
+                        initialized = "underDev"
+                    selected_game = draw_underDev_screen(screen, events, ui_manager, selected_game)
 
-                if selected_game == "home":  # If "Back" is pressed in crypto, return to home
-                    selected_game = None
-                    initialize_home(ui_manager)
-                    initialized = "home"
+                    if selected_game == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
 
-            elif selected_game == "multiple_games":
-                if initialized != "multiple_games":
-                    multipleGames.prompt_user_for_derbies(ui_manager)
-                    initialized = "multiple_games"
-                multiple_games_result = multipleGames.draw_multiple_games_screen(screen, events, ui_manager)
-                
-                if multiple_games_result == "home":  # If "Back" is pressed in multiple games, return to home
-                    selected_game = None
-                    initialize_home(ui_manager)
-                    initialized = "home"
+                elif selected_game == "multiple_games":
+                    if initialized != "multiple_games":
+                        multipleGames.prompt_user_for_derbies(ui_manager)
+                        initialized = "multiple_games"
+                    multiple_games_result = multipleGames.draw_multiple_games_screen(screen, events, ui_manager)
+                    
+                    if multiple_games_result == "home":  # If "Back" is pressed in multiple games, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
 
-            else:  # A game is selected, display game screen
-                if initialized != "game":
-                    initialize_game(ui_manager)
-                    initialized = "game"
-                game_result = draw_game_screen(screen, events, ui_manager, selected_game)
+                else:  # A game is selected, display game screen
+                    if initialized != "game":
+                        initialize_game(ui_manager)
+                        initialized = "game"
+                    game_result = draw_game_screen(screen, events, ui_manager, selected_game)
 
-                if game_result is None:  # If "Back" is pressed in game, return to home
-                    selected_game = None
-                    initialize_home(ui_manager)
-                    initialized = "home"
+                    if game_result is None:  # If "Back" is pressed in game, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
         else:
             if not get_password_reset():
                 if not get_sign_up():

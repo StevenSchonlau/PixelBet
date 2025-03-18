@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from models import db, User, bcrypt
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from flask_mailman import EmailMessage
 import uuid
@@ -83,12 +83,37 @@ def register():
         traceback.print_exc()  # Prints the full traceback for debugging
         return jsonify({'message': 'duplicate'})
 
+#This function updates the user streak if 1 < days < 2
+def update_login_streak(user):
+    #print(user.counter)
+        #days = datetime.utcnow().date.day - user.last_login.date.day
+        #print("update streak: days:" + days + " counter: " + user.counter)
+    if  user.last_login.date() == datetime.utcnow().date() - timedelta(days=1):
+        #print("HERE")
+        c = user.counter
+        user.counter = c + 1
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        return "True"
+    elif not user.last_login.date() == datetime.utcnow().date():
+        #print(datetime.utcnow().date() - timedelta(days=1), user.last_login, user.counter)
+        user.counter = 1
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+    # else:
+    #     user.last_login = datetime.utcnow()- timedelta(days=1)
+    #     db.session.commit()
+    #     print("Same day - test one day back")
+    return "False"
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']) and user.email_confirmed:
-        return jsonify({'message': 'Login successful', 'user_id': user.id, "uuid_user": user.uuid_user})
+        updated = update_login_streak(user)
+        print("updated:", updated)
+        return jsonify({'message': 'Login successful', 'user_id': user.id, "uuid_user": user.uuid_user, "updated_streak": updated})
     return jsonify({'message': 'denied'}), 401
 
 @auth_bp.route('/reset-time', methods=['POST'])
@@ -203,3 +228,15 @@ def password_reset_post():
         return jsonify({'message': 'Email Sent'})
     except:
         return jsonify({'message': 'Non-Existent'})
+    
+
+@auth_bp.route('/get-login-streak', methods=["GET"])
+def get_login_streak():
+    data = request.json
+    try:
+        print(data)
+        user = User.query.filter_by(id=str(data['id'])).first()
+        print("checked streak", user.counter)
+        return jsonify({"counter": str(user.counter)})
+    except:
+        return jsonify({"error": "error"})

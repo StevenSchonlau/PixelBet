@@ -10,7 +10,12 @@ from user_session import UserSession
 
 BASE_URL = SERVER_URL #where server is running
 
-
+login_reward = False
+def get_login_reward():
+    return login_reward
+def set_login_reward(val):
+    global login_reward
+    login_reward = val
 
 user = None
 def get_user():
@@ -45,6 +50,7 @@ def login_server(username, password):
     return response
 
 def attempt_login(username, password):
+    print("Attempted login")
     global error_message
     session = UserSession()
 
@@ -64,6 +70,10 @@ def attempt_login(username, password):
         if "denied" in str(response.json()):
             error_message = "Incorrect credentials"
             return None
+        print(response.json())
+        if "True" in response.json()["updated_streak"]:
+            global login_reward
+            login_reward = True
         session.set_user(response.json()['user_id'])
         return session.get_user()
 
@@ -119,8 +129,10 @@ def initialize_login(ui_manager):
 def draw_login_screen(screen, events, ui_manager):
     draw_background(screen)
     title_text = FONT.render("Login", True, WHITE)
-    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 100))
 
+    title_text_pixel_bet = FONT.render("PixelBet", True, GREEN)
+    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
     global error_message
     fail_text = FONT.render(error_message, True, WHITE)
     screen.blit(fail_text, (SCREEN_WIDTH // 2 - fail_text.get_width() // 2, SCREEN_HEIGHT // 8 * 2))
