@@ -46,3 +46,30 @@ def updateProfile(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
+    
+
+
+@profiles_bp.route('/set-user-notification-preferences', methods=['POST'])
+def set_user_notification_preferences():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.notification_preference = data['preference']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-notification-preferences', methods=['GET'])
+def get_user_notification_preferences():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'preference': user.notification_preference})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500

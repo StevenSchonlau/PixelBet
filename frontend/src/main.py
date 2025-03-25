@@ -15,6 +15,7 @@ from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
 from leaderboard import draw_leaderboard_page, init_leaderboard_page
 from dailyLogin import draw_popup, initialize_popup
+from musicShop import draw_music_shop, initialize_music_shop
 import multipleGames
 
 pygame.init()
@@ -88,6 +89,16 @@ def main():
                     crypto_result = draw_crypto_screen(screen, events, ui_manager)
 
                     if crypto_result == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                elif selected_game == "music":
+                    if initialized != "music":
+                        initialize_music_shop(ui_manager)
+                        initialized = "music"
+                    music_result = draw_music_shop(screen, events, ui_manager)
+
+                    if music_result == "home":  # If "Back" is pressed in crypto, return to home
                         selected_game = None
                         initialize_home(ui_manager)
                         initialized = "home"

@@ -60,12 +60,20 @@ def initialize_home(ui_manager):
 
     #Create "Sign out" button
     sign_out_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 120), (150, 50)),
+        relative_rect=pygame.Rect((0, 120), (160, 50)),
         text="Signout",
         manager=ui_manager,
         object_id="sign_out_button",
     )
     button_mapping[sign_out_button] = "Signout"
+
+    music_shop_btn = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 180), (180, 50)),
+        text="Music Shop",
+        manager=ui_manager,
+        object_id="music_shop_btn",
+    )
+    button_mapping[music_shop_btn] = "Music Shop"
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)
@@ -139,6 +147,8 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = event.ui_element.text
             elif "Signout" in event.ui_element.text:
                 clear_user()
+            elif "Music" in event.ui_element.text:
+                selected_game = "music"
             else:
                 selected_game = "underDev"
             

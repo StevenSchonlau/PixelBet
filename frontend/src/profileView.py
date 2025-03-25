@@ -32,6 +32,20 @@ def save_profile():
         error = "An error occurred"
 
 
+def get_user_notification_preferences():
+    session = UserSession()
+    response = requests.get(f"{SERVER_URL}/get-user-notification-preferences", json={"id": session.get_user()})
+    print(response)
+    preference = response.json()['preference']
+    if preference is not None:
+        return preference
+    return False
+
+def set_notification_preferences(value):
+    session = UserSession()
+    requests.post(f"{SERVER_URL}/set-user-notification-preferences", json={"id": session.get_user(), "preference": value})
+
+
 all_sprites = {}
 active_sprite = None
 active_index = 0
@@ -101,7 +115,14 @@ def init_view_profile_ui(ui_manager):
         object_id="username_label"
     )
 
+    notifications_on = get_user_notification_preferences()
+    if notifications_on:
+        email_notification_btn = draw_button("Turn off notifications", ui_manager, 1, 7)
+    else:
+        email_notification_btn = draw_button("Turn on notifications", ui_manager, 1, 7)
+
     ui_dict["back"] = back_button
+    ui_dict["email_notification_btn"] = email_notification_btn
 
 
 def draw_view_profile_button(ui_manager):
@@ -147,6 +168,14 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 active_sprite = all_sprites[active_index]
             elif text == "save":
                 save_profile()
+            elif text == "Turn off notifications":
+                set_notification_preferences(False)
+                event.ui_element.text = "Turn on notifications"
+                init_view_profile_ui(ui_manager)
+            elif text == "Turn on notifications":
+                set_notification_preferences(True)
+                event.ui_element.text = "Turn off notifications"
+                init_view_profile_ui(ui_manager)
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)

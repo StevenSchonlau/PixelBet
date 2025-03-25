@@ -25,6 +25,9 @@ class User(db.Model):
     net_worth = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
     counter = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
     last_login = db.Column(db.DateTime, default=None)
+    music = db.Column(db.String(255))
+    music_selected = db.Column(db.String(80))
+    notification_preference = db.Column(db.Boolean, default=False)
 
 
     sent_requests = db.relationship(
