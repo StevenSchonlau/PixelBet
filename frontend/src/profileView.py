@@ -45,6 +45,11 @@ def set_notification_preferences(value):
     session = UserSession()
     requests.post(f"{SERVER_URL}/set-user-notification-preferences", json={"id": session.get_user(), "preference": value})
 
+def send_progress_email(email):
+    session = UserSession()
+    requests.post(f"{SERVER_URL}/send-progress-email", json={"id": session.get_user(), "email": email})
+
+
 
 all_sprites = {}
 active_sprite = None
@@ -119,10 +124,22 @@ def init_view_profile_ui(ui_manager):
     if notifications_on:
         email_notification_btn = draw_button("Turn off notifications", ui_manager, 1, 7)
     else:
-        email_notification_btn = draw_button("Turn on notifications", ui_manager, 1, 7)
+        email_notification_btn = draw_button("Turn on notifications", ui_manager, 2, 7)
 
     ui_dict["back"] = back_button
     ui_dict["email_notification_btn"] = email_notification_btn
+
+    #TODO - add send progress email button and text field
+
+    send_progress_email_btn = draw_button("Send Progress", ui_manager, 5, 6)
+    ui_dict['send_progress_email_btn'] = send_progress_email_btn
+    send_email_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 , SCREEN_HEIGHT // 8 * 6), (SCREEN_WIDTH // 2-25,50)),
+        manager=ui_manager,
+        object_id="send_email_field",
+        placeholder_text="email to send to"
+    )
+    ui_dict['send_email_field'] = send_email_field
 
 
 def draw_view_profile_button(ui_manager):
@@ -176,6 +193,8 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 set_notification_preferences(True)
                 event.ui_element.text = "Turn off notifications"
                 init_view_profile_ui(ui_manager)
+            elif text == "Send Progress":
+                send_progress_email(ui_dict["send_email_field"].get_text())
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)

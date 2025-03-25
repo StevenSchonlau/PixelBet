@@ -32,7 +32,7 @@ future = None
 
 not_confirmed = True
 
-def check_email(): #todo, async and on lower time repeat
+def check_email():
     print("running")
     try:
         response = session.get(f"{BASE_URL}/check-confirmation", json={"id": get_user()})

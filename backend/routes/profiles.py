@@ -94,3 +94,17 @@ def send_notification_email():
         return jsonify({'message': "success"})
     except Exception as e:
         return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500
+
+
+@profiles_bp.route("/send-progress-email", methods=['POST'])
+def send_progress_email():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    print(data['id'])
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), f"{user.username}'s PixelBet Progress", f"Hello, {data['email']}! User {user.username} wanted to send you their progress in Pixel Bet.\nThey currently have ${user.net_worth}, are listening to {user.music_selected}, and last logged in at {user.last_login}.\nYou can send something similar through PixelBet from your profile.") #temporary value of my email
+        return jsonify({'message': "success"})
+    except Exception as e:
+        return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500

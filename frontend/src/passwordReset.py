@@ -16,10 +16,6 @@ BASE_URL = SERVER_URL #where server is running
 
 error_message = ""
 
-
-#TODO - create field to enter email and send button that calls /reset-password in auth.py server side
-
-
 back_to_login_btn = None
 email_txt_field =None
 send_btn = None
