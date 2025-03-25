@@ -9,6 +9,15 @@ import uuid
 profiles_bp = Blueprint('profiles', __name__)
 
 
+def send_email(to_email, subject, message):
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        to=[to_email]
+    )
+    email.send()
+    return "Email sent!"
+
 @profiles_bp.route('/users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
@@ -73,3 +82,15 @@ def get_user_notification_preferences():
         return jsonify({'preference': user.notification_preference})
     except Exception as e:
         return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
+    
+@profiles_bp.route("/send-notification-email", methods=['GET'])
+def send_notification_email():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "Important Upcoming Game", f"Hello, {user.username}! There is an upcoming game in one minute! You can change these settings in your profile.") #temporary value of my email
+        return jsonify({'message': "success"})
+    except Exception as e:
+        return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500

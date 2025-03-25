@@ -263,7 +263,7 @@ def place_bet(horse_name, bet_amount, horse_odds):
 
         print(f"✅ Bet placed: {bet_details}")
         return "Bet placed successfully!"
-                              
+
 def initialize_game(ui_manager):
     """Initializes the game screen UI elements for horse derby betting."""
     global back_button, history_toggle_button, bet_buttons, bet_amount_entry

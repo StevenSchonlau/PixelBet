@@ -7,6 +7,8 @@ from profileView import draw_view_profile_button
 from friendsList import draw_home_friends_button
 from leaderboard import draw_leaderboard_button
 from login import clear_user
+from profileView import get_user_notification_preferences
+
 import multipleGames
 
 # List of alternative game names
@@ -29,6 +31,17 @@ current_games = [
     {"name": GAME_NAMES.pop()}
 ]
 button_mapping = {}
+
+                 
+notification_email_sent = False
+notification_preference = False
+
+def send_notification_email():
+    """sends notification email"""
+    session = UserSession()
+    response = requests.get(f"{SERVER_URL}/send-notification-email", json={"id": session.get_user()})
+    print(response)
+
 
 def initialize_home(ui_manager):
     """Initializes the home screen with dynamically generated game buttons."""
@@ -86,6 +99,8 @@ def initialize_home(ui_manager):
         object_id="#multiple-games-button"
     )
     button_mapping[multiple_games_button] = "Multiple Games"
+    global notification_preference
+    notification_preference = get_user_notification_preferences()
 
 def update_games():
     global last_update_minute, current_games, used_derbies, DERBY_NAMES
@@ -110,6 +125,10 @@ def update_games():
         ]
         for button, game in zip(button_mapping.keys(), current_games):
             button.set_text(game["name"])  # Update button text
+            
+        if notification_preference:
+            send_notification_email()
+            notification_email_sent = True
             
 
 
