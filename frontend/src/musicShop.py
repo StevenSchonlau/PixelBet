@@ -5,8 +5,8 @@ from user_session import UserSession
 from game import fetch_net_worth, update_net_worth
 
 net_worth = 0
-music_arr = ["mp31", "mp32", "placeholder"]
-music_arr_path_name = ["country-fun.mp3", "out-on-the-farm.mp3", "test.mp3"]
+music_arr = ["Country Jam", "Funky Rock", "Arcade"]
+music_arr_path_name = ["country-fun.mp3", "out-on-the-farm.mp3", "arcade-kid.mp3"]
 music_arr_cost = [10, 20, 100]
 btns = [] #holds buttons for each to buy/select if (un)owned
 music_owned = [] #1's and 0's for owning or not owning music respectively
@@ -47,6 +47,9 @@ def set_music(index):
     session = UserSession()
     requests.post(f"{SERVER_URL}/set-music-selected", json={"id": session.get_user(), "music": music_arr[index]})
     #TODO - start new song here, or call function to do so
+    pygame.mixer.music.unload()
+    play_music()
+
 
 def get_selected_music():
     session = UserSession()
@@ -70,7 +73,7 @@ def initialize_music_shop(ui_manager):
             relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
             text="Selected " + music_arr[m],
             manager=ui_manager,
-            object_id="#Selected" + music_arr[m],
+            object_id="#Selected" + str(m),
             visible=True
             ))
         elif music_owned[m] == 0:
@@ -78,7 +81,7 @@ def initialize_music_shop(ui_manager):
             relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
             text="Buy " + music_arr[m] + " for $" + str(music_arr_cost[m]),
             manager=ui_manager,
-            object_id="#Buy" + music_arr[m],
+            object_id="#Buy" + str(m),
             visible=True
             )) #add new button per music_arr
         else:
@@ -86,7 +89,7 @@ def initialize_music_shop(ui_manager):
             relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
             text="Select " + music_arr[m],
             manager=ui_manager,
-            object_id="#Select" + music_arr[m],
+            object_id="#Select" + str(m),
             visible=True
             )) #add new button per music_arr
     global back_btn
@@ -124,7 +127,7 @@ def draw_music_shop(screen, events, ui_manager):
                             relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * b + 200), (400, 40)),
                             text="Select " + music_arr[b],
                             manager=ui_manager,
-                            object_id="#Select" + music_arr[b],
+                            object_id="#Select" + str(b),
                             visible=True
                             )
                     else:
@@ -141,4 +144,11 @@ def draw_music_shop(screen, events, ui_manager):
 
     pygame.display.flip()   
     return "music"
+
+def play_music():
+    name = get_selected_music()
+    if name is not None and name != "":
+        idx = music_arr.index(name)
+        pygame.mixer.music.load("frontend/assets/music/" + music_arr_path_name[idx])
+        pygame.mixer.music.play(loops=-1)
 

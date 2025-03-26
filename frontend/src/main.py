@@ -15,7 +15,7 @@ from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
 from leaderboard import draw_leaderboard_page, init_leaderboard_page
 from dailyLogin import draw_popup, initialize_popup
-from musicShop import draw_music_shop, initialize_music_shop
+from musicShop import draw_music_shop, initialize_music_shop, play_music
 import multipleGames
 
 pygame.init()
@@ -34,6 +34,7 @@ initialized = "None"
 current_screen = "login"
 selected_game = None
 login_reward = False
+music_playing = False
 def main():
     global initialized, current_screen, selected_game
     clock = pygame.time.Clock()
@@ -52,8 +53,12 @@ def main():
             ui_manager.process_events(event)
 
         screen.fill(BLACK)  # Clear screen
+        global music_playing
         
         if get_user() is not None:
+            if not music_playing:
+                play_music()
+                music_playing = True
             if get_login_reward():
                 #show login_reward
                 if initialized != "dailyLogin":
@@ -135,6 +140,7 @@ def main():
                         initialize_home(ui_manager)
                         initialized = "home"
         else:
+            music_playing = False
             if not get_password_reset():
                 if not get_sign_up():
                     if get_back_to_login(): #reset when back at login

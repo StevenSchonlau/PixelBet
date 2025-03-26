@@ -76,7 +76,6 @@ def attempt_login(username, password):
             login_reward = True
         session.set_user(response.json()['user_id'])
         #Start music https://www.pygame.org/docs/ref/music.html#pygame.mixer.music.play based on users preference
-
         return session.get_user()
 
 #global vars for buttons
