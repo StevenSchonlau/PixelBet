@@ -5,6 +5,7 @@ from routes.auth import auth_bp
 from routes.profiles import profiles_bp
 from routes.friends import friends_bp
 from routes.game import game_bp
+from routes.achievements import achievements_bp
 
 from flask_mailman import Mail
 #Need to register routes here if a new file is created
@@ -26,5 +27,6 @@ def create_app():
     app.register_blueprint(profiles_bp)
     app.register_blueprint(friends_bp)
     app.register_blueprint(game_bp, url_prefix="/game")
+    app.register_blueprint(achievements_bp, url_prefix="/achievements")
 
     return app

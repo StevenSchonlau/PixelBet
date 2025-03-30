@@ -26,6 +26,8 @@ class User(db.Model):
     counter = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
     last_login = db.Column(db.DateTime, default=None)
 
+    achievements = db.Column(db.PickleType, nullable=False, default=list)
+
 
     sent_requests = db.relationship(
         'FriendAssociation',

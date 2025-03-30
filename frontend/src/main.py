@@ -15,6 +15,7 @@ from underDev import initialize_underDev, draw_underDev_screen
 from friendsList import init_friends_page, draw_friends_page
 from leaderboard import draw_leaderboard_page, init_leaderboard_page
 from dailyLogin import draw_popup, initialize_popup
+from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
 import multipleGames
 
 pygame.init()
@@ -33,11 +34,12 @@ initialized = "None"
 current_screen = "login"
 selected_game = None
 login_reward = False
+
 def main():
-    global initialized, current_screen, selected_game
+    global initialized, current_screen, selected_game, show_achievement_popup ,GLOBAL_ACHIEVEMENTS
     clock = pygame.time.Clock()
     running = True
-
+    print(GLOBAL_ACHIEVEMENTS)
 
     while running:
         time_delta = clock.tick(FPS) / 1000.0  # pygame_gui needs delta time
@@ -46,7 +48,6 @@ def main():
         for event in events:
             #print(event)
             if event.type == pygame.QUIT:
-                print ("main quit")
                 running = False
             ui_manager.process_events(event)
 
@@ -59,6 +60,12 @@ def main():
                     initialize_popup(ui_manager)
                     initialized = "dailyLogin"
                 draw_popup(screen, events, ui_manager)
+            elif get_ach_popup():
+                if initialized != "achievement":
+                    print("initializing achievement popup")
+                    initialize_achievement_popup(ui_manager)
+                    initialized = "achievement"
+                draw_achievement_popup(screen, events, ui_manager)
             else:
                 if selected_game is None:  # Home screen logic
                     if initialized != "home":
