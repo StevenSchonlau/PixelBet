@@ -8,9 +8,19 @@ from user_session import UserSession
 
 BASEURL = SERVER_URL
 
+active_avatar_index = 0
+active_shirt_index = 0
+username = ""
+avatar = 0
+owns_shirts_list = []
+achievements = []
+ui_dict = {}
+error = None
+selected_friend = None
+all_shirts = {}
 
 def save_profile():
-    global username, ui_dict, error
+    global username, ui_dict, error, active_avatar_index, active_shirt_index
     session = UserSession()
     current_user = session.get_user()
     
@@ -20,22 +30,20 @@ def save_profile():
 
     data = {
         "username": ui_dict["username"].get_text(),
-        "avatar": all_sprites[active_index].name
+        "avatar": active_avatar_index,
+        "active_shirt": owns_shirts_list[active_shirt_index]
     }
 
     response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
     if response.status_code == 200:
-        print("Profile updated:", response.json())
         error = "Success!"
     else:
-        print("Error:", response.status_code, response.json())
         error = "An error occurred"
 
 
 def get_user_notification_preferences():
     session = UserSession()
     response = requests.get(f"{SERVER_URL}/get-user-notification-preferences", json={"id": session.get_user()})
-    print(response)
     preference = response.json()['preference']
     if preference is not None:
         return preference
@@ -49,51 +57,31 @@ def send_progress_email(email):
     session = UserSession()
     requests.post(f"{SERVER_URL}/send-progress-email", json={"id": session.get_user(), "email": email})
 
-
-
-all_sprites = {}
-active_sprite = None
-active_index = 0
-username = ""
-avatar = ""
-achievements = []
-ui_dict = {}
-error = None
-selected_friend = None
-
-
 def init_profile_view(ui_manager, selected_player=None):
-    global all_sprites, active_sprite, avatar, username, active_index, selected_friend, achievements
-    all_sprites = [
-        Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
-        Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
-        Sprite(name="homeless3", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_3/Walk.png").convert_alpha())
-    ]
+    global avatar, username, active_avatar_index, selected_friend, achievements, active_shirt, owns_shirts_list, all_shirts
+    all_shirts = {
+        "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
+        "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
+        "redShirt0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/redShirt1.png"), (200, 200)),
+        "redShirt1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/redShirt2.png"), (200, 200)),
+        "pixelShirt0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/pixelShirt1.png"), (200, 200)),
+        "pixelShirt1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/pixelShirt2.png"), (200, 200)),
+    }
     if selected_player:
         user = get_profile(selected_player.id)
         selected_friend = selected_player
     else:
         user = get_profile()
         selected_friend = None
-    print(user)
-    avatar = user["avatar"]
+    avatar = int(user["avatar"])
     username = user["username"]
     user_id = user["id"]
-    if avatar:
-        for index, sprite in enumerate(all_sprites):
-            if sprite.name == avatar:
-                active_sprite = sprite
-                active_index = index
-
-    else:
-        active_sprite = all_sprites[0]
-
+    active_shirt = user["active_shirt"]
+    owns_shirts_list = user["owns_shirts_list"]
     
     resp = requests.get(f"{SERVER_URL}/achievements/{user_id}")
     if resp.status_code == 200:
-        print(resp)
         achievements = resp.json().get("achievements", [])
-        print(achievements)
     else:
         achievements = []
 
@@ -107,9 +95,11 @@ def init_view_profile_ui(ui_manager):
 
     back_button = draw_button("Back", ui_manager, 0, 0)
     if not selected_friend:
-        left_button = draw_button("<", ui_manager, 2.6, 4)
-        right_button = draw_button(">", ui_manager, 4.6, 4)
-        save_button = draw_button("save", ui_manager, 3.3, 7)
+        left_button = draw_button("<", ui_manager, 2.6, 4, "avatar_left")
+        right_button = draw_button(">", ui_manager, 4.6, 4, "avatar_right")
+        left_button_shirt = draw_button("<", ui_manager, 2.6, 3.3, "shirt_left")
+        right_button_shirt = draw_button(">", ui_manager, 4.6, 3.3, "shirt_right")
+        save_button = draw_button("save", ui_manager, 3.3, 5)
         username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
             relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
             manager=ui_manager,
@@ -178,23 +168,25 @@ def get_center(text):
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
-    global active_sprite, active_index, error, ui_dict
+    global active_avatar_index, active_shirt_index, error, ui_dict
     draw_background(screen)
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             text = event.ui_element.text
-            print(event.ui_element.object_ids)
-            print(text)
             if text == "Back":
                 selected_game = None
                 error = None
-            elif text == "<" and active_sprite:
-                active_index = (active_index - 1) % len(all_sprites)
-                active_sprite = all_sprites[active_index]
-            elif text == ">" and active_sprite:
-                active_index = (active_index + 1) % len(all_sprites)
-                active_sprite = all_sprites[active_index]
+            elif "avatar_left" in event.ui_element.object_ids:
+                active_avatar_index = (active_avatar_index - 1) % 2
+            elif "avatar_right" in event.ui_element.object_ids:
+                active_avatar_index = (active_avatar_index + 1) % 2
+            elif "shirt_left" in event.ui_element.object_ids:
+                active_shirt_index = (active_shirt_index - 1) % len(owns_shirts_list)
+                print(active_shirt_index)
+            elif "shirt_right" in event.ui_element.object_ids:
+                active_shirt_index = (active_shirt_index + 1) % len(owns_shirts_list)
+                print(active_shirt_index)
             elif text == "save":
                 save_profile()
             elif text == "Turn off notifications":
@@ -211,12 +203,6 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
 
-    if active_sprite:
-        active_sprite.update()
-        screen.blit(active_sprite.image, active_sprite.rect)
-
-        sprite_name = FONT.render(active_sprite.name, True, WHITE)
-        screen.blit(sprite_name, ((SCREEN_WIDTH // 8) * 3.1, (SCREEN_HEIGHT // 8) * 4.9))
     
     if error:
         error_name = FONT.render(error, True, WHITE)
@@ -226,6 +212,7 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     screen.blit(FONT.render("Achievements:", True, WHITE), (50, y_offset))
     y_offset += 30
 
+    screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((SCREEN_WIDTH // 8) * 3,(SCREEN_HEIGHT // 8) * 2))
 
     for ach in achievements:
         # Draw title

@@ -21,14 +21,16 @@ class User(db.Model):
     uuid_user = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
     sent_time_stamp = db.Column(db.DateTime, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, default=False)
-    avatar = db.Column(db.String(80))
+    avatar = db.Column(db.Integer, default=0)
     net_worth = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
     counter = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
-    last_login = db.Column(db.DateTime, default=None)
+    last_login = db.Column(db.DateTime, default=datetime.utcnow)
     music = db.Column(db.String(255))
     music_selected = db.Column(db.String(80))
     notification_preference = db.Column(db.Boolean, default=False)
 
+    active_shirt = db.Column(db.String(30), default="default")
+    owns_shirts_list = db.Column(db.PickleType, default=lambda: ["default", "redShirt"])
     achievements = db.Column(db.PickleType, nullable=False, default=list)
 
 

@@ -27,7 +27,7 @@ FONT = pygame.font.Font(FONT_PATH, 24)
 SERVER_URL="http://localhost:5000/"
 
 
-def draw_button(text, ui_manager, x, y):
+def draw_button(text, ui_manager, x, y, object_id=None):
     text_surface = FONT.render(text, True, WHITE)
     button_width = text_surface.get_width() + 40
     button_height = text_surface.get_height() + 20
@@ -38,6 +38,7 @@ def draw_button(text, ui_manager, x, y):
         relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
         text=text,
         manager=ui_manager,
+        object_id=object_id
     )
 
 
