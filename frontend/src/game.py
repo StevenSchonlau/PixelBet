@@ -4,6 +4,7 @@ import datetime
 import random
 from constants import *
 from login import get_user  # Replace 'login' with the actual module name
+from achievements import check_achievements, set_ach_popup, get_ach_popup
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 
@@ -49,6 +50,7 @@ def fetch_net_worth():
 
 def update_net_worth(new_balance):
     """Updates the user's net worth on the backend API."""
+    global show_achievement_popup, new_achievements
     BASE_URL = SERVER_URL
     USER_ID = get_user()
     if not USER_ID:
@@ -62,6 +64,14 @@ def update_net_worth(new_balance):
         )
         if response.status_code == 200:
             print(f"✅ Net worth updated successfully: ${new_balance}")
+            '''add achievment check'''
+            new_achievements = check_achievements(USER_ID)
+            if new_achievements:
+                print("set popup to true")
+                set_ach_popup(True)
+            else:
+                set_ach_popup(False)
+                print("no new achievement")
         else:
             print(f"⚠️ Failed to update net worth: {response.json()}")
     except Exception as e:

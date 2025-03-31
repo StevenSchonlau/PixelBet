@@ -38,7 +38,7 @@ def initialize_popup(ui_manager):
 
 def draw_popup(screen, events, ui_manager):
     draw_background(screen)
-    reward = 10*(int(streak)+1)
+    reward = 10*(int(float(streak))+1)
     title_text = FONT.render(f"You received ${reward}!", True, WHITE)
     title_text2 = FONT.render(f"You have logged in {streak} days in a row!", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 200))

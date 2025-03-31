@@ -29,6 +29,8 @@ class User(db.Model):
     music_selected = db.Column(db.String(80))
     notification_preference = db.Column(db.Boolean, default=False)
 
+    achievements = db.Column(db.PickleType, nullable=False, default=list)
+
 
     sent_requests = db.relationship(
         'FriendAssociation',

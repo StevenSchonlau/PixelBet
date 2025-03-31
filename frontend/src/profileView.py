@@ -56,13 +56,14 @@ active_sprite = None
 active_index = 0
 username = ""
 avatar = ""
+achievements = []
 ui_dict = {}
 error = None
 selected_friend = None
 
 
 def init_profile_view(ui_manager, selected_player=None):
-    global all_sprites, active_sprite, avatar, username, active_index, selected_friend
+    global all_sprites, active_sprite, avatar, username, active_index, selected_friend, achievements
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
@@ -74,8 +75,10 @@ def init_profile_view(ui_manager, selected_player=None):
     else:
         user = get_profile()
         selected_friend = None
+    print(user)
     avatar = user["avatar"]
     username = user["username"]
+    user_id = user["id"]
     if avatar:
         for index, sprite in enumerate(all_sprites):
             if sprite.name == avatar:
@@ -84,6 +87,15 @@ def init_profile_view(ui_manager, selected_player=None):
 
     else:
         active_sprite = all_sprites[0]
+
+    
+    resp = requests.get(f"{SERVER_URL}/achievements/{user_id}")
+    if resp.status_code == 200:
+        print(resp)
+        achievements = resp.json().get("achievements", [])
+        print(achievements)
+    else:
+        achievements = []
 
     ui_manager.clear_and_reset()
     init_view_profile_ui(ui_manager)
@@ -166,7 +178,7 @@ def get_center(text):
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
-    global active_sprite, active_index, error
+    global active_sprite, active_index, error, ui_dict
     draw_background(screen)
 
     for event in events:
@@ -209,6 +221,18 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     if error:
         error_name = FONT.render(error, True, WHITE)
         screen.blit(error_name, ((SCREEN_WIDTH // 8) * 1, (SCREEN_HEIGHT // 8) * 6))
+
+    y_offset = SCREEN_HEIGHT // 8 * 6
+    screen.blit(FONT.render("Achievements:", True, WHITE), (50, y_offset))
+    y_offset += 30
+
+
+    for ach in achievements:
+        # Draw title
+        title = FONT.render(ach["title"], True, WHITE)
+        screen.blit(title, (90, y_offset + 4))
+
+        y_offset += 40
 
 
     pygame.display.flip()
