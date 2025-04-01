@@ -87,6 +87,12 @@ def initialize_home(ui_manager):
         object_id="music_shop_btn",
     )
     button_mapping[music_shop_btn] = "Music Shop"
+    shirt_shop_btn = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 240), (180, 50)),
+        text="Shirt Shop",
+        manager=ui_manager,
+        object_id="shirt_shop_btn",
+    )
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)
@@ -168,6 +174,8 @@ def draw_home_screen(screen, events, ui_manager):
                 clear_user()
             elif "Music" in event.ui_element.text:
                 selected_game = "music"
+            elif "Shirt" in event.ui_element.text:
+                selected_game = "shirt"
             else:
                 selected_game = "underDev"
             

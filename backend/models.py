@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy.dialects.mysql import CHAR, NUMERIC
+from sqlalchemy.ext.mutable import MutableList
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
@@ -30,7 +31,7 @@ class User(db.Model):
     notification_preference = db.Column(db.Boolean, default=False)
 
     active_shirt = db.Column(db.String(30), default="default")
-    owns_shirts_list = db.Column(db.PickleType, default=lambda: ["default", "redShirt"])
+    owns_shirts_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=False, default=list)
 
 
