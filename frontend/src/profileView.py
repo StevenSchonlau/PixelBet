@@ -5,6 +5,7 @@ import random
 import requests
 from constants import *
 from user_session import UserSession
+from game import fetch_bet_history
 
 BASEURL = SERVER_URL
 
@@ -60,10 +61,11 @@ achievements = []
 ui_dict = {}
 error = None
 selected_friend = None
+bet_history = []
 
 
 def init_profile_view(ui_manager, selected_player=None):
-    global all_sprites, active_sprite, avatar, username, active_index, selected_friend, achievements
+    global all_sprites, active_sprite, avatar, username, active_index, selected_friend, achievements, bet_history
     all_sprites = [
         Sprite(name="homeless1", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_1/Walk.png").convert_alpha()),
         Sprite(name="homeless2", sprite_sheet=pygame.image.load("frontend/assets/sprites/Homeless_2/Walk.png").convert_alpha()),
@@ -96,6 +98,8 @@ def init_profile_view(ui_manager, selected_player=None):
         print(achievements)
     else:
         achievements = []
+    bet_history = fetch_bet_history(user_id)
+    print(bet_history)
 
     ui_manager.clear_and_reset()
     init_view_profile_ui(ui_manager)
@@ -178,7 +182,7 @@ def get_center(text):
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
-    global active_sprite, active_index, error, ui_dict
+    global active_sprite, active_index, error, ui_dict, bet_history
     draw_background(screen)
 
     for event in events:
@@ -223,16 +227,33 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
         screen.blit(error_name, ((SCREEN_WIDTH // 8) * 1, (SCREEN_HEIGHT // 8) * 6))
 
     y_offset = SCREEN_HEIGHT // 8 * 6
-    screen.blit(FONT.render("Achievements:", True, WHITE), (50, y_offset))
-    y_offset += 30
 
+    # Retrieve the back button's rectangle (if available)
+    back_rect = ui_dict["back"].get_relative_rect() if "back" in ui_dict else pygame.Rect(0, 0, 0, 0)
 
+    # Set the starting position under the back button, adjust x and y as needed.
+    achievement_x = 10  # x-coordinate on the left side
+    achievement_y = back_rect.bottom + 50  # 10 pixels below the back button
+
+    # Draw the header for achievements using the smaller font
+    header = FONT.render("Achievements:", True, WHITE)
+    screen.blit(header, (achievement_x, achievement_y))
+    achievement_y += 20  # Move down for the list items
+
+    # Draw each achievement title with the smaller font
     for ach in achievements:
-        # Draw title
         title = FONT.render(ach["title"], True, WHITE)
-        screen.blit(title, (90, y_offset + 4))
+        screen.blit(title, (achievement_x, achievement_y))
+        achievement_y += 20  # Adjust spacing between achievements as needed
 
-        y_offset += 40
+    wins = sum(1 for bet in bet_history if bet.get("outcome") == "win")
+    losses = sum(1 for bet in bet_history if bet.get("outcome") == "loss")
+    wins_text = FONT.render(f"Wins: {wins}", True, (0, 255, 0))
+    losses_text = FONT.render(f"Losses: {losses}", True, (255, 0, 0))
+    wins_pos = (SCREEN_WIDTH - wins_text.get_width() - 10, 10)
+    losses_pos = (SCREEN_WIDTH - losses_text.get_width() - 10, 10 + wins_text.get_height() + 5)
+    screen.blit(wins_text, wins_pos)
+    screen.blit(losses_text, losses_pos)
 
 
     pygame.display.flip()
