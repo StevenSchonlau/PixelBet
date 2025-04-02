@@ -16,6 +16,8 @@ from friendsList import init_friends_page, draw_friends_page
 from leaderboard import draw_leaderboard_page, init_leaderboard_page
 from dailyLogin import draw_popup, initialize_popup
 from musicShop import draw_music_shop, initialize_music_shop, play_music
+from shirtShop import draw_shirt_shop, initialize_shirt_shop
+from roomShop import draw_room_shop, initialize_room_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
 import multipleGames
 
@@ -111,6 +113,26 @@ def main():
                     music_result = draw_music_shop(screen, events, ui_manager)
 
                     if music_result == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                elif selected_game == "shirt":
+                    if initialized != "shirt":
+                        initialize_shirt_shop(ui_manager)
+                        initialized = "shirt"
+                    shirt_result = draw_shirt_shop(screen, events, ui_manager)
+
+                    if shirt_result == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                elif selected_game == "room":
+                    if initialized != "room":
+                        initialize_room_shop(ui_manager)
+                        initialized = "room"
+                    shirt_result = draw_room_shop(screen, events, ui_manager)
+
+                    if shirt_result == "home":  # If "Back" is pressed in crypto, return to home
                         selected_game = None
                         initialize_home(ui_manager)
                         initialized = "home"

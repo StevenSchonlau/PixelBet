@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template
 from models import db, User, bcrypt
 
+from decimal import Decimal
+
 from datetime import datetime
 import os
 from flask_mailman import EmailMessage
@@ -34,7 +36,16 @@ def get_all_users():
 def getProfile(user_id):
     user = User.query.filter_by(id=str(user_id)).first()
     if user:
-        return jsonify({"username": user.username, "id": user.id, "avatar": user.avatar, "net_worth": user.net_worth})
+        return jsonify({
+            "username": user.username,
+            "id": user.id,
+            "avatar": user.avatar,
+            "net_worth": user.net_worth,
+            "active_shirt": user.active_shirt,
+            "active_room": user.active_room,
+            "owns_shirts_list": user.owns_shirts_list,
+            "owns_room_list": user.owns_room_list
+        })
     return jsonify({'message': 'User doesn\'t exist'}), 401
 
 @profiles_bp.route('/profile/<uuid:user_id>', methods=['POST'])
@@ -44,10 +55,16 @@ def updateProfile(user_id):
         return jsonify({'message': 'User not found'}), 404
 
     data = request.json
+    if not data:
+        return jsonify({'message': 'Failed to update profile'}), 500
     if 'username' in data:
         user.username = data['username']
     if 'avatar' in data:
         user.avatar = data['avatar']
+    if 'active_shirt' in data:
+        user.active_shirt = int(data['active_shirt'])
+    if 'active_room' in data:
+        user.active_room = int(data['active_room'])
 
     try:
         db.session.commit()
@@ -56,7 +73,45 @@ def updateProfile(user_id):
         db.session.rollback()
         return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
     
+@profiles_bp.route('/profile/buyshirt/<uuid:user_id>', methods=['POST'])
+def buyShirt(user_id):
+    user = User.query.filter_by(id=str(user_id)).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
 
+    data = request.json
+    if not data:
+        return jsonify({'message': 'Data not found'}), 404
+
+    user.net_worth -= Decimal(data['cost'])
+    user.owns_shirts_list.append(data['shirt'])
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Shirt added successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
+
+@profiles_bp.route('/profile/buyroom/<uuid:user_id>', methods=['POST'])
+def buyRoom(user_id):
+    user = User.query.filter_by(id=str(user_id)).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    data = request.json
+    if not data:
+        return jsonify({'message': 'Data not found'}), 404
+
+    user.net_worth -= Decimal(data['cost'])
+    user.owns_room_list.append(data['room'])
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Room added successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
 
 @profiles_bp.route('/set-user-notification-preferences', methods=['POST'])
 def set_user_notification_preferences():
