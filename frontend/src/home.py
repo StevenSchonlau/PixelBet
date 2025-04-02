@@ -93,6 +93,12 @@ def initialize_home(ui_manager):
         manager=ui_manager,
         object_id="shirt_shop_btn",
     )
+    shirt_shop_btn = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 300), (180, 50)),
+        text="Shirt Shop",
+        manager=ui_manager,
+        object_id="shirt_shop_btn",
+    )
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)

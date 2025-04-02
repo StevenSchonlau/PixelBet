@@ -14,6 +14,21 @@ class FriendAssociation(db.Model):
     friend_id = db.Column(CHAR(36), db.ForeignKey('user.id'), primary_key=True)
     pending = db.Column(db.Boolean, default=True, nullable=False)
 
+from sqlalchemy import Enum
+
+class BetHistory(db.Model):
+    __tablename__ = 'bet_history'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(CHAR(36), db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    horse = db.Column(db.String(80), nullable=False)
+    odds = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    outcome = db.Column(Enum('win', 'loss', 'undecided', name='bet_outcome'),
+                        nullable=False, default='undecided')
+
+
+
 class User(db.Model):
     id = db.Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -49,6 +64,8 @@ class User(db.Model):
         lazy='dynamic',
         cascade="all, delete-orphan"
     )
+
+    bet_history = db.relationship('BetHistory', backref='user', lazy=True)
 
     @property
     def friends(self):

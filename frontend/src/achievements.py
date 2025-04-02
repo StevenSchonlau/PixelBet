@@ -26,8 +26,9 @@ ACHIEVEMENT_CONDITIONS = {
 }
 
 def check_achievements(user_id):
+    global new_achievements
     BASE_URL = SERVER_URL
-
+    new_achievements = []
     # 1️⃣ Get the user’s profile (net_worth, username, etc.)
     profile_resp = requests.get(f"{BASE_URL}/profile/{user_id}")
     profile_resp.raise_for_status()
@@ -72,8 +73,6 @@ def get_achievement():
 
 def initialize_achievement_popup(ui_manager):
     global pending_achievements, current_achievement, achievement_popup_button, new_achievements
-
-    print("▶ initialize_achievement_popup called")
     print("   new_achievements:", new_achievements)
 
     pending_achievements = new_achievements.copy()
@@ -135,7 +134,6 @@ def draw_achievement_popup(screen, events, ui_manager):
 
     if current_achievement is None:
         return
-    print("▶ draw_achievement_popup — showing:", current_achievement["id"])
 
     screen.fill(BLACK)
     title = FONT.render(current_achievement["title"], True, WHITE)

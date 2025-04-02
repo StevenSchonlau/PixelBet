@@ -11,6 +11,7 @@ music_arr_cost = [10, 20, 100]
 btns = [] #holds buttons for each to buy/select if (un)owned
 music_owned = [] #1's and 0's for owning or not owning music respectively
 the_net_worth = 0
+selected_btn = -1
 
 def get_music_owned():
     #get the music owned and append 0 to music_owned if unowned, 1 if owned
@@ -45,10 +46,13 @@ def buy_music(index):
 
 def set_music(index):
     session = UserSession()
-    requests.post(f"{SERVER_URL}/set-music-selected", json={"id": session.get_user(), "music": music_arr[index]})
-    #TODO - start new song here, or call function to do so
-    pygame.mixer.music.unload()
-    play_music()
+    if index == -1:
+        requests.post(f"{SERVER_URL}/set-music-selected", json={"id": session.get_user(), "music": None})
+        pygame.mixer.music.unload()
+    else:
+        requests.post(f"{SERVER_URL}/set-music-selected", json={"id": session.get_user(), "music": music_arr[index]})
+        pygame.mixer.music.unload()
+        play_music()
 
 
 def get_selected_music():
@@ -132,6 +136,10 @@ def draw_music_shop(screen, events, ui_manager):
                             )
                     else:
                         #select music
+                        global selected_btn
+                        if b == selected_btn:
+                            b = -1
+                        selected_btn = b
                         set_music(b)
                         initialize_music_shop(ui_manager)
                 elif event.ui_element == back_btn:
