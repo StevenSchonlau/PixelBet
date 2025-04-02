@@ -24,13 +24,31 @@ THEME_PATH = "frontend/assets/ui/theme.json"
 
 FONT_PATH = "frontend/assets/fonts/PixelEmulator-xq08.ttf"
 FONT = pygame.font.Font(FONT_PATH, 24)
+SMALL_FONT = pygame.font.Font(FONT_PATH, 12)
+MD_FONT = pygame.font.Font(FONT_PATH, 18)
 SERVER_URL="http://localhost:5000/"
 
 
-def draw_button(text, ui_manager, x, y, object_id=None):
-    text_surface = FONT.render(text, True, WHITE)
-    button_width = text_surface.get_width() + 40
-    button_height = text_surface.get_height() + 20
+def draw_button(text, ui_manager, x, y, object_id=None, size=None):
+    if size == "sm":
+        obj_id = "#small_button"
+        font = SMALL_FONT
+        x_pad = 20
+        y_pad = 10
+    elif size == "md":
+        obj_id = "#medium_button"
+        font = MD_FONT
+        x_pad = 20
+        y_pad = 10
+    else:
+        obj_id = object_id
+        font = FONT
+        x_pad = 40
+        y_pad = 20
+
+    text_surface = font.render(text, True, WHITE)
+    button_width = text_surface.get_width() + x_pad
+    button_height = text_surface.get_height() + y_pad
     button_x = (SCREEN_WIDTH // 8) * x
     button_y = (SCREEN_HEIGHT // 8) * y
     
@@ -38,7 +56,7 @@ def draw_button(text, ui_manager, x, y, object_id=None):
         relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
         text=text,
         manager=ui_manager,
-        object_id=object_id
+        object_id=obj_id
     )
 
 

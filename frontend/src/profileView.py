@@ -10,21 +10,25 @@ from game import fetch_bet_history
 BASEURL = SERVER_URL
 
 active_avatar_index = 0
+active_room_index = 0
 active_shirt_index = 0
 username = ""
 avatar = 0
 owns_shirts_list = []
+owns_rooms_list = []
 achievements = []
 ui_dict = {}
 error = None
 selected_friend = None
 all_shirts = {}
+all_rooms = {}
 bet_history = []
 
 def save_profile():
-    global username, ui_dict, error, active_avatar_index, active_shirt_index
+    global username, ui_dict, error, active_avatar_index, active_shirt_index, active_room_index
     session = UserSession()
     current_user = session.get_user()
+    print(owns_shirts_list[active_shirt_index])
     
     if ui_dict["username"].get_text() == "":
         error = "Cannot leave username blank!"
@@ -33,7 +37,8 @@ def save_profile():
     data = {
         "username": ui_dict["username"].get_text(),
         "avatar": active_avatar_index,
-        "active_shirt": owns_shirts_list[active_shirt_index]
+        "active_shirt": active_shirt_index,
+        "active_room": active_room_index,
     }
 
     response = requests.post(f"{BASEURL}/profile/{current_user}", json=data)
@@ -60,7 +65,7 @@ def send_progress_email(email):
     requests.post(f"{SERVER_URL}/send-progress-email", json={"id": session.get_user(), "email": email})
 
 def init_profile_view(ui_manager, selected_player=None):
-    global avatar, username, active_avatar_index, selected_friend, achievements, active_shirt, owns_shirts_list, all_shirts
+    global avatar, username, active_avatar_index, selected_friend, achievements, owns_shirts_list, all_shirts, all_rooms, owns_room_list, active_shirt_index, active_room_index
     all_shirts = {
         "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
         "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
@@ -69,17 +74,27 @@ def init_profile_view(ui_manager, selected_player=None):
         "pixelShirt0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/pixelShirt1.png"), (200, 200)),
         "pixelShirt1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/pixelShirt2.png"), (200, 200)),
     }
+    all_rooms = {
+        "default": pygame.image.load("frontend/assets/rooms/defaultRoom.png"),
+        "cozy": pygame.image.load("frontend/assets/rooms/cozyRoom.png"),
+        "tech": pygame.image.load("frontend/assets/rooms/techRoom.png"),
+    }
     if selected_player:
         user = get_profile(selected_player.id)
         selected_friend = selected_player
     else:
         user = get_profile()
         selected_friend = None
-    avatar = int(user["avatar"])
+    active_avatar_index = int(user["avatar"])
     username = user["username"]
     user_id = user["id"]
-    active_shirt = user["active_shirt"]
+
     owns_shirts_list = user["owns_shirts_list"]
+    owns_room_list = user["owns_room_list"]
+
+    active_shirt_index = int(user['active_shirt'])
+    print(active_shirt_index)
+    active_room_index = int(user['active_room'])
     
     resp = requests.get(f"{SERVER_URL}/achievements/{user_id}")
     if resp.status_code == 200:
@@ -99,18 +114,38 @@ def init_view_profile_ui(ui_manager):
 
     back_button = draw_button("Back", ui_manager, 0, 0)
     if not selected_friend:
-        left_button = draw_button("<", ui_manager, 2.6, 4, "avatar_left")
-        right_button = draw_button(">", ui_manager, 4.6, 4, "avatar_right")
-        left_button_shirt = draw_button("<", ui_manager, 2.6, 3.3, "shirt_left")
-        right_button_shirt = draw_button(">", ui_manager, 4.6, 3.3, "shirt_right")
-        save_button = draw_button("save", ui_manager, 3.3, 5)
+        left_button = draw_button("<", ui_manager, 2.8, 6, "avatar_left", size="md")
+        right_button = draw_button(">", ui_manager, 4.4, 6, "avatar_right", size="md")
+        left_button_shirt = draw_button("<", ui_manager, 2.8, 5.3, "shirt_left", size="md")
+        right_button_shirt = draw_button(">", ui_manager, 4.4, 5.3, "shirt_right", size="md")
+        left_button_room = draw_button("<", ui_manager, 2.6, 0, "room_left", size="md")
+        right_button_room = draw_button(">", ui_manager, 4.6, 0, "room_right", size="md")
+        save_button = draw_button("save", ui_manager, 6.8, 6.3)
         username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            relative_rect=pygame.Rect((SCREEN_WIDTH // 8 * 4.8 , SCREEN_HEIGHT // 8 * 6.3), (SCREEN_WIDTH // 4,50)),
             manager=ui_manager,
             object_id="username"
         )
         username_field.set_text(username)
-        ui_dict = {"username": username_field, "left": left_button, "right": right_button, "save": save_button}
+        room_label_rect = pygame.Rect((SCREEN_WIDTH // 8 * 2.8, SCREEN_HEIGHT // 8 * 0), (SCREEN_WIDTH // 4,50))
+        room_label = pygame_gui.elements.UILabel(
+            relative_rect=room_label_rect,
+            text=f"{owns_room_list[active_room_index]}",
+            manager=ui_manager,
+        )
+        ui_dict = {
+            "username": username_field,
+            "left": left_button,
+            "right": right_button,
+            "save": save_button,
+            "avatar_left": left_button,
+            "avatar_right": right_button,
+            "shirt_left": left_button_shirt,
+            "shirt_right": right_button_shirt,
+            "room_left": left_button_room,
+            "room_right": right_button_room,
+            "room_label": room_label,
+        }
     else:
         username_field = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
@@ -118,29 +153,22 @@ def init_view_profile_ui(ui_manager):
             manager=ui_manager,
             object_id="#username-label"
         )
-    username_label_rect = pygame.Rect((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 8 * .5 - 30), (SCREEN_WIDTH // 2, 30))
-    username_label = pygame_gui.elements.UILabel(
-        relative_rect=username_label_rect,
-        text="Username:",
-        manager=ui_manager,
-        object_id="username_label"
-    )
 
     notifications_on = get_user_notification_preferences()
     if notifications_on:
-        email_notification_btn = draw_button("Turn off notifications", ui_manager, 1, 7)
+        email_notification_btn = draw_button("Turn off notifications", ui_manager, 2, 7, size="sm")
     else:
-        email_notification_btn = draw_button("Turn on notifications", ui_manager, 2, 7)
+        email_notification_btn = draw_button("Turn on notifications", ui_manager, 2, 7, size="sm")
 
     ui_dict["back"] = back_button
     ui_dict["email_notification_btn"] = email_notification_btn
 
     #TODO - add send progress email button and text field
 
-    send_progress_email_btn = draw_button("Send Progress", ui_manager, 5, 6)
+    send_progress_email_btn = draw_button("Send Progress", ui_manager, 2, 7.3, size="sm")
     ui_dict['send_progress_email_btn'] = send_progress_email_btn
     send_email_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 , SCREEN_HEIGHT // 8 * 6), (SCREEN_WIDTH // 2-25,50)),
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 * 4.2 , SCREEN_HEIGHT // 8 * 7), (SCREEN_WIDTH // 2-25,50)),
         manager=ui_manager,
         object_id="send_email_field",
         placeholder_text="email to send to"
@@ -172,8 +200,8 @@ def get_center(text):
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
-    global active_avatar_index, active_shirt_index, error, ui_dict, bet_history
-    draw_background(screen)
+    global active_avatar_index, active_shirt_index, error, ui_dict, bet_history, active_avatar_index, all_rooms, owns_room_list, active_room_index
+    screen.blit(all_rooms[owns_room_list[active_room_index]], (0, 0))
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -181,14 +209,18 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
             if text == "Back":
                 selected_game = None
                 error = None
-            elif "avatar_left" in event.ui_element.object_ids:
+            elif event.ui_element == ui_dict["avatar_left"]:
                 active_avatar_index = (active_avatar_index - 1) % 2
-            elif "avatar_right" in event.ui_element.object_ids:
+            elif event.ui_element == ui_dict["avatar_right"]:
                 active_avatar_index = (active_avatar_index + 1) % 2
-            elif "shirt_left" in event.ui_element.object_ids:
+            elif event.ui_element == ui_dict["shirt_left"]:
                 active_shirt_index = (active_shirt_index - 1) % len(owns_shirts_list)
-            elif "shirt_right" in event.ui_element.object_ids:
+            elif event.ui_element == ui_dict["shirt_right"]:
                 active_shirt_index = (active_shirt_index + 1) % len(owns_shirts_list)
+            elif event.ui_element == ui_dict["room_left"]:
+                active_room_index = (active_room_index - 1) % len(owns_room_list)
+            elif event.ui_element == ui_dict["room_right"]:
+                active_room_index = (active_room_index + 1) % len(owns_room_list)
             elif text == "save":
                 save_profile()
             elif text == "Turn off notifications":
@@ -205,6 +237,8 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
 
+    ui_dict["room_label"].set_text(f"{owns_room_list[active_room_index]} room")
+
     
     if error:
         error_name = FONT.render(error, True, WHITE)
@@ -212,7 +246,7 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
 
     y_offset = SCREEN_HEIGHT // 8 * 6
 
-    screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((SCREEN_WIDTH // 8) * 3,(SCREEN_HEIGHT // 8) * 2))
+    screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((SCREEN_WIDTH // 8) * 2.85,(SCREEN_HEIGHT // 8) * 4))
     # Retrieve the back button's rectangle (if available)
     back_rect = ui_dict["back"].get_relative_rect() if "back" in ui_dict else pygame.Rect(0, 0, 0, 0)
 

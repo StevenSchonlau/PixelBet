@@ -45,8 +45,10 @@ class User(db.Model):
     music_selected = db.Column(db.String(80))
     notification_preference = db.Column(db.Boolean, default=False)
 
-    active_shirt = db.Column(db.String(30), default="default")
+    active_shirt = db.Column(db.Integer, default=0)
     owns_shirts_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
+    active_room = db.Column(db.Integer, default=0)
+    owns_room_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=False, default=list)
 
 
