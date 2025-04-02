@@ -183,10 +183,8 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 active_avatar_index = (active_avatar_index + 1) % 2
             elif "shirt_left" in event.ui_element.object_ids:
                 active_shirt_index = (active_shirt_index - 1) % len(owns_shirts_list)
-                print(active_shirt_index)
             elif "shirt_right" in event.ui_element.object_ids:
                 active_shirt_index = (active_shirt_index + 1) % len(owns_shirts_list)
-                print(active_shirt_index)
             elif text == "save":
                 save_profile()
             elif text == "Turn off notifications":
