@@ -441,7 +441,7 @@ def place_bet(horse_name, bet_amount, horse_odds):
             "horse": horse_name,
             "odds": horse_odds,
             "amount": bet_amount,
-            "outcome": "undecided"
+            "outcome": "undecided",
         }
         print(bet_details)
 
@@ -566,6 +566,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
             else:
                 bet["outcome"] = "loss"
+                message_label.set_text(f"Lost ${bet["amount"]}. Better luck next time!")
 
 
         
