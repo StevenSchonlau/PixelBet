@@ -99,6 +99,12 @@ def initialize_home(ui_manager):
         manager=ui_manager,
         object_id="room_shop_btn",
     )
+    theme_shop_btn = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 360), (180, 50)),
+        text="Theme Shop",
+        manager=ui_manager,
+        object_id="theme_shop_btn",
+    )
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)
@@ -184,6 +190,8 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = "shirt"
             elif "Room" in event.ui_element.text:
                 selected_game = "room"
+            elif "Theme" in event.ui_element.text:
+                selected_game = "theme"
             else:
                 selected_game = "underDev"
             

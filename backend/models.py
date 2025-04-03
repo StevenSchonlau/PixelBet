@@ -49,6 +49,8 @@ class User(db.Model):
     owns_shirts_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     active_room = db.Column(db.Integer, default=0)
     owns_room_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
+    active_theme = db.Column(db.Integer, default=0)
+    owns_themes = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=False, default=list)
 
 
