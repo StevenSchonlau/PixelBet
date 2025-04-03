@@ -100,6 +100,7 @@ def update_login_streak(user):
         user.counter = 1
         user.last_login = datetime.utcnow()
         db.session.commit()
+        return "True"
     # else:
     #     user.last_login = datetime.utcnow()- timedelta(days=1)
     #     db.session.commit()
