@@ -70,7 +70,7 @@ def send_progress_email(email):
 def init_profile_view(ui_manager, selected_player=None):
     global avatar, username, active_avatar_index, selected_friend, achievements
     global owns_shirts_list, all_shirts, all_rooms, owns_room_list, active_shirt_index, active_room_index
-    global owns_themes, active_theme_index
+    global owns_themes, active_theme_index, bet_history
     all_shirts = {
         "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
         "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
