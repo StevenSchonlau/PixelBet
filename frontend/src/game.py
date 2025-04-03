@@ -30,6 +30,8 @@ horse_bets = {}
 pending_bets = {}
 current_date_filter = "All"  # Options: "30s", "1m", "1h" or None for no filter
 current_sort_order = "None"  # Options: "none", "desc" (largest first), "asc" (smallest first)
+theme_btn_dict = {}
+user = None
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -49,6 +51,36 @@ def fetch_net_worth():
     except Exception as e:
         print(f"❌ Error fetching net worth: {str(e)}")
         return 0
+
+def draw_game_background(surface):
+    """Draws background as a gradient"""
+    global user
+    gradient_presets = {
+        'default': (PRIMARY, SECONDARY),  # pastel red, less pink
+        'red': ((255, 120, 100), (240, 80, 60)),  # pastel red, less pink
+        'green': ((102, 255, 178), (0, 102, 51)),   # mint to forest
+        'purple': ((204, 153, 255), (102, 0, 204)), # lavender to royal
+        'gold': ((255, 215, 0), (184, 134, 11)),    # gold to goldenrod
+    }
+
+    if user:
+        active_background_index = user['active_theme']
+        owns_themes = user['owns_themes']
+        gradient_key = owns_themes[active_background_index]
+    else:
+        gradient_key = 'default'
+
+    top_color, bottom_color = gradient_presets.get(
+        gradient_key, ((186, 48, 48), (223, 27, 27))
+    )
+
+    width, height = surface.get_size()
+    for y in range(height):
+        ratio = y / height
+        r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
+        g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
+        b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
+        pygame.draw.line(surface, (r, g, b), (0, y), (width, y))
 
 def update_net_worth(new_balance):
     """Updates the user's net worth on the backend API."""
@@ -428,7 +460,8 @@ def initialize_game(ui_manager):
     global back_button, history_toggle_button, bet_buttons, bet_amount_entry
     global message_label, race_timer_label, race_start_time, horses
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
-    global net_worth, bet_history
+    global net_worth, bet_history, user
+    user = get_profile()
     net_worth = fetch_net_worth()
     bet_history = fetch_bet_history(USER_ID)
     # Clear old UI elements
@@ -494,7 +527,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
     global bet_history, race_start_time, bets_placed, message_label, winner_announced, net_worth
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, current_date_filter, current_sort_order
-    draw_background(screen)
+    draw_game_background(screen)
 
     # Show game and balance info
     game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)

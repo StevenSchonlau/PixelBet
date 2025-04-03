@@ -44,7 +44,9 @@ def getProfile(user_id):
             "active_shirt": user.active_shirt,
             "active_room": user.active_room,
             "owns_shirts_list": user.owns_shirts_list,
-            "owns_room_list": user.owns_room_list
+            "owns_room_list": user.owns_room_list,
+            "active_theme": user.active_theme,
+            "owns_themes": user.owns_themes,
         })
     return jsonify({'message': 'User doesn\'t exist'}), 401
 
@@ -65,6 +67,8 @@ def updateProfile(user_id):
         user.active_shirt = int(data['active_shirt'])
     if 'active_room' in data:
         user.active_room = int(data['active_room'])
+    if 'active_theme' in data:
+        user.active_theme = int(data['active_theme'])
 
     try:
         db.session.commit()
@@ -89,6 +93,26 @@ def buyShirt(user_id):
     try:
         db.session.commit()
         return jsonify({'message': 'Shirt added successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
+
+@profiles_bp.route('/profile/buytheme/<uuid:user_id>', methods=['POST'])
+def buyTheme(user_id):
+    user = User.query.filter_by(id=str(user_id)).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    data = request.json
+    if not data:
+        return jsonify({'message': 'Data not found'}), 404
+
+    user.net_worth -= Decimal(data['cost'])
+    user.owns_themes.append(data['theme'])
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Theme added successfully'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': 'Failed to update profile', 'error': str(e)}), 500
