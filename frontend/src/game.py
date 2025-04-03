@@ -33,6 +33,8 @@ current_sort_order = "None"  # Options: "none", "desc" (largest first), "asc" (s
 theme_btn_dict = {}
 user = None
 betting_limit = None
+pygame.mixer.init()
+button_click_sound = pygame.mixer.Sound("./frontend/assets/effects/buttonClick.wav")
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -780,6 +782,8 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            button_click_sound.play()
+
             if event.ui_element == rumor_button:
                 handle_rumor_button()
             
