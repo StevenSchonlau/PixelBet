@@ -70,7 +70,7 @@ def send_progress_email(email):
 def init_profile_view(ui_manager, selected_player=None):
     global avatar, username, active_avatar_index, selected_friend, achievements
     global owns_shirts_list, all_shirts, all_rooms, owns_room_list, active_shirt_index, active_room_index
-    global owns_themes, active_theme_index
+    global owns_themes, active_theme_index, bet_history
     all_shirts = {
         "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
         "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
@@ -192,6 +192,55 @@ def init_view_profile_ui(ui_manager):
     )
     ui_dict['send_email_field'] = send_email_field
 
+    achievements_button = draw_button("Achievements", ui_manager, 0, 7.5, size="sm")
+    ui_dict["achievements_button"] = achievements_button
+
+def show_achievements_panel(ui_manager):
+    """
+    Creates and displays a panel overlay with the user's achievements.
+    The panel includes a Close button to remove it.
+    """
+    panel_rect = pygame.Rect(200, 100, SCREEN_WIDTH - 400, SCREEN_HEIGHT - 400)
+    achievements_panel = pygame_gui.elements.UIPanel(
+        relative_rect=panel_rect,
+        manager=ui_manager,
+        object_id="#achievements_panel"
+    )
+    ui_dict["achievements_panel"] = achievements_panel
+    # Add a close button on the panel
+    close_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((panel_rect.width - 110, 10), (100, 30)),
+        text="Close",
+        manager=ui_manager,
+        container=achievements_panel,
+        object_id="#close_achievements"
+    )
+    
+    # List achievements inside the panel
+    y_offset = 50
+    if achievements:
+        for ach in achievements:
+            # Display each achievement title
+            ach_label = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect((10, y_offset, panel_rect.width - 20, 30)),
+                text=ach["title"],
+                manager=ui_manager,
+                container=achievements_panel,
+                object_id="#achievement_label"
+            )
+            y_offset += 40
+    else:
+        pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((10, y_offset, panel_rect.width - 20, 30)),
+            text="No achievements earned yet.",
+            manager=ui_manager,
+            container=achievements_panel,
+            object_id="#achievement_label"
+        )
+    
+    return achievements_panel
+
+
 
 def draw_view_profile_button(ui_manager):
     text_surface = FONT.render("View Profile", True, WHITE)
@@ -255,6 +304,13 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 init_view_profile_ui(ui_manager)
             elif text == "Send Progress":
                 send_progress_email(ui_dict["send_email_field"].get_text())
+            elif text == "Achievements":
+                # Create and display the achievements panel overlay.
+                show_achievements_panel(ui_manager)
+            elif event.ui_element.object_ids and "#close_achievements" in event.ui_element.object_ids:
+                if "achievements_panel" in ui_dict:
+                    ui_dict["achievements_panel"].kill()
+                    del ui_dict["achievements_panel"]
 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
@@ -270,23 +326,7 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     y_offset = SCREEN_HEIGHT // 8 * 6
 
     screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((SCREEN_WIDTH // 8) * 2.85,(SCREEN_HEIGHT // 8) * 4))
-    # Retrieve the back button's rectangle (if available)
-    back_rect = ui_dict["back"].get_relative_rect() if "back" in ui_dict else pygame.Rect(0, 0, 0, 0)
 
-    # Set the starting position under the back button, adjust x and y as needed.
-    achievement_x = 10  # x-coordinate on the left side
-    achievement_y = back_rect.bottom + 50  # 10 pixels below the back button
-
-    # Draw the header for achievements using the smaller font
-    header = FONT.render("Achievements:", True, WHITE)
-    screen.blit(header, (achievement_x, achievement_y))
-    achievement_y += 20  # Move down for the list items
-
-    # Draw each achievement title with the smaller font
-    for ach in achievements:
-        title = FONT.render(ach["title"], True, WHITE)
-        screen.blit(title, (achievement_x, achievement_y))
-        achievement_y += 20  # Adjust spacing between achievements as needed
 
     wins = sum(1 for bet in bet_history if bet.get("outcome") == "win")
     losses = sum(1 for bet in bet_history if bet.get("outcome") == "loss")
