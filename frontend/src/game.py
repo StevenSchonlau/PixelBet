@@ -471,6 +471,7 @@ def initialize_game(ui_manager):
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
+    global rumor_button, insider_button
     user = get_profile()
     net_worth = fetch_net_worth()
     bet_history = fetch_bet_history(USER_ID)
@@ -517,7 +518,7 @@ def initialize_game(ui_manager):
 
     #message label
     message_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 150, 260, 300, 30)),
+        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 250, 260, 500, 30)),
         text="",
         manager=ui_manager,
         object_id="#label"
@@ -552,9 +553,78 @@ def initialize_game(ui_manager):
         manager=ui_manager,
         object_id="toggle-button"
     )
+
+    insider_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 200, SCREEN_HEIGHT - 40, 200, 40)),  # Positioned close to the bottom-right
+        text="Insider $50",
+        manager=ui_manager,
+        object_id="insider-button"
+    )
+
+
+    rumor_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 410, SCREEN_HEIGHT - 40, 200, 40)),  # Positioned next to Insider Message
+        text="Rumor $20",
+        manager=ui_manager,
+        object_id="rumor-button"
+    )
+
+
+
     draw_betting_table(ui_manager)
     # Start the race timer
     race_start_time = datetime.datetime.now()
+
+def handle_rumor_button():
+    global net_worth  
+    rumor_cost = 20  # Cost of purchasing a rumor
+
+    if net_worth >= rumor_cost:
+        net_worth -= rumor_cost  # Deduct the cost from net_worth
+        non_winning_horses = [horse["name"] for horse in horses if horse["name"] != winning_horse]
+        revealed_horse = random.choice(non_winning_horses)
+
+        rumor_options = [
+                f"{revealed_horse} did not sleep well last night...",
+                f"{revealed_horse} looked a bit sluggish during practice.",
+                f"{revealed_horse} was seen eating way too much before the race!",
+                f"{revealed_horse} seems distracted.",
+                f"{revealed_horse} was overheard complaining about the weather."
+        ]
+
+        # Select a random rumor style
+        message_label.set_text(random.choice(rumor_options))
+
+    else:
+        message_label.set_text("Not enough resources to purchase a rumor!")
+    
+def handle_insider_button():
+    global net_worth
+    insider_cost = 50  # Cost of purchasing insider information
+
+    if net_worth >= insider_cost:
+        net_worth -= insider_cost  # Deduct the cost from net_worth
+
+        # Select the winning horse
+        horse_one = winning_horse
+
+        # Randomly select a non-winning horse
+        non_winning_horses = [horse["name"] for horse in horses if horse["name"] != winning_horse]
+        horse_two = random.choice(non_winning_horses)
+
+        # Generate positive insights for both horses
+        insider_options = [
+            f"{horse_one} and {horse_two} are favorites among trainers.",
+            f"{horse_one} and {horse_two} looked strongest during practice.",
+            f"{horse_one} and {horse_two} are in their best form.",
+            f"{horse_one} and {horse_two} have impressed everyone this week."
+        ]
+
+
+        # Select a random insider insight
+        message_label.set_text(random.choice(insider_options))
+    else:
+        message_label.set_text("Not enough resources to purchase insider information!")
 
 def handle_set_limit_button():
     global betting_limit
@@ -710,6 +780,12 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == rumor_button:
+                handle_rumor_button()
+            
+            if event.ui_element == insider_button:
+                handle_insider_button()
+
             if event.ui_element == set_limit_button:
                 handle_set_limit_button()  # Call the set limit function
 
