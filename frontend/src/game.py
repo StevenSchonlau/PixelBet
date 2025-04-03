@@ -32,6 +32,7 @@ current_date_filter = "All"  # Options: "30s", "1m", "1h" or None for no filter
 current_sort_order = "None"  # Options: "none", "desc" (largest first), "asc" (smallest first)
 theme_btn_dict = {}
 user = None
+betting_limit = None
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -407,6 +408,14 @@ def place_bet(horse_name, bet_amount, horse_odds):
     print("existing_bet:")
     print(existing_bet)
 
+
+    if betting_limit is not None:
+        total_bets = sum(bet["amount"] for bet in bets_placed) + bet_amount
+        if total_bets > betting_limit:
+            return(f"Bet exceeds your set limit of ${betting_limit}!")
+
+
+
     if existing_bet:
         # **Modify existing bet amount**
         bet_difference = bet_amount - existing_bet["amount"]
@@ -461,6 +470,7 @@ def initialize_game(ui_manager):
     global message_label, race_timer_label, race_start_time, horses
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
+    global set_limit_button, remove_limit_button, limit_entry
     user = get_profile()
     net_worth = fetch_net_worth()
     bet_history = fetch_bet_history(USER_ID)
@@ -513,6 +523,29 @@ def initialize_game(ui_manager):
         object_id="#label"
     )
 
+    set_limit_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 230, SCREEN_HEIGHT - 280, 100, 30)),
+        text="Set",
+        manager=ui_manager,
+        object_id="set-limit-button"
+    )
+
+    remove_limit_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 120, SCREEN_HEIGHT - 280, 100, 30)),  
+        text="Remove",
+        manager=ui_manager,
+        object_id="remove-limit-button"
+    )
+
+
+    limit_entry = pygame_gui.elements.UITextEntryLine(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 230, SCREEN_HEIGHT - 320, 210, 30)),  
+        manager=ui_manager,
+        object_id="limit-entry"
+    )
+
+
+
     history_toggle_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((0, SCREEN_HEIGHT - 40, 200, 40)),
         text="View Bet History",
@@ -522,6 +555,25 @@ def initialize_game(ui_manager):
     draw_betting_table(ui_manager)
     # Start the race timer
     race_start_time = datetime.datetime.now()
+
+def handle_set_limit_button():
+    global betting_limit
+    try:
+        new_limit = float(limit_entry.get_text())  # Get user input from the entry field
+        if new_limit <= 0:  # Validate that the limit is positive
+            raise ValueError
+        betting_limit = new_limit  # Update the betting limit
+        message_label.set_text(f"Betting limit set to ${betting_limit:.2f}")
+        limit_entry.set_text("") 
+    except ValueError:
+        # Display an error message if input is invalid
+        message_label.set_text("Error: Please enter a valid positive number!")
+    
+def handle_remove_limit_button():
+    global betting_limit
+    betting_limit = None  # Clear the betting limit
+    message_label.set_text("Betting limit removed.")  # Notify the user
+    limit_entry.set_text("") 
 
 def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
@@ -567,9 +619,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
             else:
                 bet["outcome"] = "loss"
                 message_label.set_text(f"Lost ${bet["amount"]}. Better luck next time!")
-
-
-        
         # Set flag to prevent rerunning
         winner_announced = True
     if time_elapsed >= 30:
@@ -661,6 +710,12 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == set_limit_button:
+                handle_set_limit_button()  # Call the set limit function
+
+            if event.ui_element == remove_limit_button:
+                handle_remove_limit_button()  # Call the remove limit function
+
             if event.ui_element == back_button:
                 print("Returning to home screen")
                 update_net_worth(net_worth)
