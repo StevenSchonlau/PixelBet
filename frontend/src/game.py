@@ -36,6 +36,8 @@ betting_limit = None
 pygame.mixer.init()
 winning_sound = pygame.mixer.Sound("./frontend/assets/effects/winning.wav")
 losing_sound = pygame.mixer.Sound("./frontend/assets/effects/losing.wav")
+money_sound = pygame.mixer.Sound("./frontend/assets/effects/money.wav")
+play_sound_effects = True
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -474,7 +476,7 @@ def initialize_game(ui_manager):
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
-    global rumor_button, insider_button
+    global rumor_button, insider_button, sound_toggle_button
     user = get_profile()
     net_worth = fetch_net_worth()
     bet_history = fetch_bet_history(USER_ID)
@@ -505,11 +507,21 @@ def initialize_game(ui_manager):
 
     # Create "Back" button to return to home
     back_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 0, 100, 40)),  # Position: Top Right
+        relative_rect=pygame.Rect((0, 0, 100, 40)),  
         text="Back",
         manager=ui_manager,
         object_id="#back_button"
     )
+
+    sound_toggle_button = draw_button(
+        text="Turn Sound Effects Off",  # Default text
+        ui_manager=ui_manager,
+        x=1,  # Place to the right of the "Back" button
+        y=0,  # Same vertical position as "Back" button
+        object_id="#sound_toggle_button",
+        size="sm"  # Small button size
+    )
+
 
     # Timer label to show countdown to next race
     race_timer_label = pygame_gui.elements.UILabel(
@@ -577,6 +589,16 @@ def initialize_game(ui_manager):
     draw_betting_table(ui_manager)
     # Start the race timer
     race_start_time = datetime.datetime.now()
+
+def handle_sound_toggle():
+    global play_sound_effects
+
+    play_sound_effects = not play_sound_effects  # Toggle the sound effects state
+
+    if play_sound_effects:
+        sound_toggle_button.set_text("Turn Sound Effects Off")
+    else:
+        sound_toggle_button.set_text("Turn Sound Effects On")
 
 def handle_rumor_button():
     global net_worth  
@@ -689,11 +711,13 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
-                winning_sound.play()
+                if (play_sound_effects):
+                    winning_sound.play()
             else:
                 bet["outcome"] = "loss"
                 message_label.set_text(f"Lost ${bet["amount"]}. Better luck next time!")
-                losing_sound.play()
+                if (play_sound_effects):
+                    losing_sound.play()
 
         # Set flag to prevent rerunning
         winner_announced = True
@@ -786,7 +810,9 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            # button_click_sound.play()
+
+            if event.ui_element == sound_toggle_button:
+                handle_sound_toggle()
 
             if event.ui_element == rumor_button:
                 handle_rumor_button()
@@ -838,6 +864,8 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                     else:
                         bet_amount = pending_bets[horse_name]
                         message_label.set_text(place_bet(horse_name, bet_amount, horse_odds))
+                        if (play_sound_effects):
+                            money_sound.play()
 
             
             
