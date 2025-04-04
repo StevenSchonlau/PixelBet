@@ -34,7 +34,8 @@ theme_btn_dict = {}
 user = None
 betting_limit = None
 pygame.mixer.init()
-button_click_sound = pygame.mixer.Sound("./frontend/assets/effects/buttonClick.wav")
+winning_sound = pygame.mixer.Sound("./frontend/assets/effects/winning.wav")
+losing_sound = pygame.mixer.Sound("./frontend/assets/effects/losing.wav")
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -688,9 +689,12 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
+                winning_sound.play()
             else:
                 bet["outcome"] = "loss"
                 message_label.set_text(f"Lost ${bet["amount"]}. Better luck next time!")
+                losing_sound.play()
+
         # Set flag to prevent rerunning
         winner_announced = True
     if time_elapsed >= 30:
@@ -782,7 +786,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            button_click_sound.play()
+            # button_click_sound.play()
 
             if event.ui_element == rumor_button:
                 handle_rumor_button()

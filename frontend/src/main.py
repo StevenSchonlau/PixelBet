@@ -40,6 +40,9 @@ selected_game = None
 login_reward = False
 music_playing = False
 
+pygame.mixer.init()
+button_click_sound = pygame.mixer.Sound("./frontend/assets/effects/buttonClick.wav")
+
 def main():
     global initialized, current_screen, selected_game, show_achievement_popup ,GLOBAL_ACHIEVEMENTS
     clock = pygame.time.Clock()
@@ -51,6 +54,8 @@ def main():
         events = pygame.event.get()  # Collect all events
         
         for event in events:
+            if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                button_click_sound.play()
             #print(event)
             if event.type == pygame.QUIT:
                 running = False
