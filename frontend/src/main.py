@@ -20,6 +20,7 @@ from shirtShop import draw_shirt_shop, initialize_shirt_shop
 from roomShop import draw_room_shop, initialize_room_shop
 from themeShop import draw_theme_shop, initialize_theme_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
+from notifications import initialize_notification, draw_notification
 import multipleGames
 
 pygame.init()
@@ -92,6 +93,11 @@ def main():
                         init_profile_view(ui_manager)
                         initialized = "profile-view"
                     selected_game = draw_view_profile(screen, events, ui_manager, selected_game)
+                elif selected_game == "notifications":
+                    if initialized != "notifications":
+                        initialize_notification(ui_manager)
+                        initialized = "notifications"
+                    selected_game = draw_notification(screen, events, ui_manager)
                 elif selected_game == "Friends":
                     if initialized != "friends":
                         init_friends_page(ui_manager)

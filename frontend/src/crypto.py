@@ -8,6 +8,7 @@ from game import fetch_net_worth, update_net_worth
 mining = False
 net_worth = 0.0
 last_update_time = datetime.datetime.now()
+print("RESTARTED ________")
 passive_income_rate = 0.01
 manual_mine_rate = 1
 passive_upgrade_cost = 10
@@ -15,6 +16,9 @@ manual_upgrade_cost = 10
 passive_upgrade_level = 1
 manual_upgrade_level = 1
 max_upgrade_level = 5
+def set_last_update_time(tm):
+    global last_update_time
+    last_update_time = tm
 
 def initialize_crypto(ui_manager):
     """Initializes the crypto mining screen."""

@@ -7,7 +7,7 @@ from profileView import draw_view_profile_button
 from friendsList import draw_home_friends_button
 from leaderboard import draw_leaderboard_button
 from login import clear_user
-from profileView import get_user_notification_preferences
+from notifications import get_user_notification_preferences
 
 import multipleGames
 

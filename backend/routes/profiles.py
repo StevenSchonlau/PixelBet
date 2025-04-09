@@ -152,7 +152,7 @@ def set_user_notification_preferences():
         return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
     
 @profiles_bp.route('/get-user-notification-preferences', methods=['GET'])
-def get_user_notification_preferences():
+def get_user_notification_preferences_results():
     data = request.json
     user = User.query.filter_by(id=str(data['id'])).first()
     if not user:
@@ -162,6 +162,33 @@ def get_user_notification_preferences():
     except Exception as e:
         return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
     
+
+@profiles_bp.route('/set-user-notification-preferences-results', methods=['POST'])
+def set_user_notification_preferences_results():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.notification_preference_result = data['preference']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-notification-preferences-results', methods=['GET'])
+def get_user_notification_preferences():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'preference': user.notification_preference_result})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
+    
+
 @profiles_bp.route("/send-notification-email", methods=['GET'])
 def send_notification_email():
     data = request.json
@@ -187,6 +214,23 @@ def send_progress_email():
         if music_str == None:
             music_str = "nothing"
         send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), f"{user.username}'s PixelBet Progress", f"Hello, {data['email']}! User {user.username} wanted to send you their progress in Pixel Bet.\nThey currently have ${user.net_worth}, are listening to {music_str}, and last logged in at {user.last_login}.\nYou can send something similar through PixelBet from your profile.") #temporary value of my email
+        return jsonify({'message': "success"})
+    except Exception as e:
+        return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500
+
+
+@profiles_bp.route("/send-bet-email", methods=['POST'])
+def send_bet_email():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    print(data['id'])
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        if data['win'] == True:
+            send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "You WON", f"Hello, {user.username}! This email is to notify you that you have won a bet of ${data['amount']:.2f} from {data['wh']}. Keep up the streak!") #temporary value of my email
+        else:
+            send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "You LOST", f"Hello, {user.username}! This email is to notify you that you have lost a bet of ${data['amount']:.2f} with {data['lh']} to the winner {data['wh']}. Better luck next time!") #temporary value of my email
         return jsonify({'message': "success"})
     except Exception as e:
         return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500

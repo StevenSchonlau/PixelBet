@@ -5,6 +5,7 @@ import random
 from constants import *
 from login import get_user  # Replace 'login' with the actual module name
 from achievements import check_achievements, set_ach_popup, get_ach_popup
+from notifications import get_user_notification_preferences_results
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 
@@ -38,12 +39,17 @@ winning_sound = pygame.mixer.Sound("./frontend/assets/effects/winning.wav")
 losing_sound = pygame.mixer.Sound("./frontend/assets/effects/losing.wav")
 money_sound = pygame.mixer.Sound("./frontend/assets/effects/money.wav")
 play_sound_effects = True
+result_notifications = False
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
     global USER_ID, BASE_URL
     BASE_URL = SERVER_URL
     USER_ID = get_user()
+
+    
+    #check mining and update based on that
+
     try:
         response = requests.get(f"{BASE_URL}/game/get-net-worth/{get_user()}")
         if response.status_code == 200:
@@ -57,6 +63,25 @@ def fetch_net_worth():
     except Exception as e:
         print(f"❌ Error fetching net worth: {str(e)}")
         return 0
+
+def send_bet_email(win, amount, wh, lh=""):
+    """Sends email with win/loss (T/F) and amount"""
+    global USER_ID, BASE_URL
+    BASE_URL = SERVER_URL
+    USER_ID = get_user()
+    try:
+        data = {
+            "win": win,
+            "amount": amount,
+            "id": USER_ID,
+            "wh": wh,
+            "lh": lh
+        }
+        requests.post(f"{BASE_URL}/send-bet-email", json=data)
+    except Exception as e:
+        print(f"❌ Error sending email: {str(e)}")
+        return 0
+
 
 def draw_game_background(surface):
     """Draws background as a gradient"""
@@ -477,6 +502,8 @@ def initialize_game(ui_manager):
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
     global rumor_button, insider_button, sound_toggle_button
+    global result_notifications
+    result_notifications = get_user_notification_preferences_results()
     user = get_profile()
     net_worth = fetch_net_worth()
     bet_history = fetch_bet_history(USER_ID)
@@ -702,12 +729,14 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     if time_elapsed == 25 and not winner_announced:
         print(f"🏆 Winning Horse: {winning_horse}")
         message_label.set_text(f"Winning Horse: {winning_horse}")
-
+        global result_notifications
         # Process bets
         for bet in bets_placed:
             if bet["horse"] == winning_horse:
                 bet["outcome"] = "win"
                 winnings = bet["amount"] * bet["odds"]
+                if result_notifications:
+                    send_bet_email(True, winnings, winning_horse)
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
@@ -715,7 +744,9 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                     winning_sound.play()
             else:
                 bet["outcome"] = "loss"
-                message_label.set_text(f"Lost ${bet["amount"]}. Better luck next time!")
+                message_label.set_text(f"Lost ${bet['amount']}. Better luck next time!")
+                if result_notifications:
+                    send_bet_email(False, bet["amount"], winning_horse, bet["horse"])
                 if (play_sound_effects):
                     losing_sound.play()
 
