@@ -5,7 +5,7 @@ import random
 from constants import *
 from login import get_user  # Replace 'login' with the actual module name
 from achievements import check_achievements, set_ach_popup, get_ach_popup
-from notifications import get_user_notification_preferences_results
+from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 
@@ -47,7 +47,6 @@ def fetch_net_worth():
     BASE_URL = SERVER_URL
     USER_ID = get_user()
 
-    
     #check mining and update based on that
 
     try:
@@ -55,7 +54,6 @@ def fetch_net_worth():
         if response.status_code == 200:
             data = response.json()
             print(f"🔄 Fetched net worth: ${data['net_worth']}")
-
             return(float(data.get('net_worth', 0.0)))
         else:
             print(f"⚠️ Failed to fetch net worth: {response.json()}")
@@ -122,12 +120,17 @@ def update_net_worth(new_balance):
         print("❌ No user logged in!")
         return
 
+    the_min, the_max = get_user_networth_min_max()
     try:
         response = requests.post(
             f"{BASE_URL}/game/update-net-worth/{USER_ID}",
             json={"net_worth": new_balance}
         )
         if response.status_code == 200:
+            if new_balance < the_min:
+                send_networth_email(new_balance, the_min, -1)
+            elif new_balance > the_max:
+                send_networth_email(new_balance, -1, the_max)
             print(f"✅ Net worth updated successfully: ${new_balance}")
             '''add achievment check'''
             new_achievements = check_achievements(USER_ID)

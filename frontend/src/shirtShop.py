@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 from constants import *
+from notifications import get_user_networth_min_max, send_networth_email
 
 net_worth = 0
 shirt_arr = ["Red Shirt", "Pixel Shirt"]
@@ -17,8 +18,14 @@ def buy_shirt(index):
         "cost": shirt_arr_cost[index],
         "shirt": shirt_dict[shirt_arr[index]],
     }
+    the_min, the_max = get_user_networth_min_max()
+    new_nw = net_worth - shirt_arr_cost[index]
     response = requests.post(f"{SERVER_URL}/profile/buyshirt/{get_profile()['id']}", json=data)
     if response.status_code == 200:
+        if new_nw < the_min:
+            send_networth_email(new_nw, the_min, -1)
+        elif new_nw > the_max:
+            send_networth_email(new_nw, -1, the_max)
         error = "Success!"
         net_worth = float(get_profile()['net_worth'])
     else:

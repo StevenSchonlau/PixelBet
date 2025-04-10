@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 from constants import *
+from notifications import get_user_networth_min_max, send_networth_email
 
 net_worth = 0
 themes = ["Red", "Green", "Purple", "Gold"]
@@ -17,8 +18,14 @@ def buy_theme(index):
         "cost": theme_cost[index],
         "theme": theme_dict[themes[index]],
     }
+    the_min, the_max = get_user_networth_min_max()
+    new_nw = net_worth - theme_cost[index]
     response = requests.post(f"{SERVER_URL}/profile/buytheme/{get_profile()['id']}", json=data)
     if response.status_code == 200:
+        if new_nw < the_min:
+            send_networth_email(new_nw, the_min, -1)
+        elif new_nw > the_max:
+            send_networth_email(new_nw, -1, the_max)
         error = "Success!"
         net_worth = float(get_profile()['net_worth'])
     else:

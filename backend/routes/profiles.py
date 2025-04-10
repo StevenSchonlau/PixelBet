@@ -152,7 +152,7 @@ def set_user_notification_preferences():
         return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
     
 @profiles_bp.route('/get-user-notification-preferences', methods=['GET'])
-def get_user_notification_preferences_results():
+def get_user_notification_preferences():
     data = request.json
     user = User.query.filter_by(id=str(data['id'])).first()
     if not user:
@@ -178,7 +178,7 @@ def set_user_notification_preferences_results():
         return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
     
 @profiles_bp.route('/get-user-notification-preferences-results', methods=['GET'])
-def get_user_notification_preferences():
+def get_user_notification_preferences_results():
     data = request.json
     user = User.query.filter_by(id=str(data['id'])).first()
     if not user:
@@ -188,6 +188,73 @@ def get_user_notification_preferences():
     except Exception as e:
         return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
     
+
+@profiles_bp.route('/set-user-notification-preferences-networth', methods=['POST'])
+def set_user_notification_preferences_networth():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.notification_preference_networth = data['preference']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-notification-preferences-networth', methods=['GET'])
+def get_user_notification_preferences_networth():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'preference': user.notification_preference_networth})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
+
+
+@profiles_bp.route('/set-user-networth-min-max', methods=['POST'])
+def set_user_networth_min_max():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.net_worth_min = data['min']
+    user.net_worth_max = data['max']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-networth-min-max', methods=['GET'])
+def get_user_networth_min_max():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'min': user.net_worth_min, 'max': user.net_worth_max})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
+
+@profiles_bp.route("/send-networth-email", methods=['POST'])
+def send_networth_email():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        if float(data['min']) == -1:
+            send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "Your networth rose!", f"Hello, {user.username}! Your networth is now ${data['nw']:.2f}, which is higher than ${data['max']:.2f}, the amount you set in notifications.") #temporary value of my email
+        else:
+            send_email(os.getenv('EMAIL_USERNAME', 'your_email@gmail.com'), "Your networth dropped!", f"Hello, {user.username}! Your networth is now ${data['nw']:.2f}, which is lower than ${data['min']:.2f}, the amount you set in notifications.") #temporary value of my email
+        return jsonify({'message': "success"})
+    except Exception as e:
+        return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500
 
 @profiles_bp.route("/send-notification-email", methods=['GET'])
 def send_notification_email():

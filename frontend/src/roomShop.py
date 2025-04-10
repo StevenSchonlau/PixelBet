@@ -3,6 +3,7 @@ import pygame_gui
 from constants import *
 from user_session import UserSession
 from game import fetch_net_worth, update_net_worth
+from notifications import get_user_networth_min_max, send_networth_email
 
 net_worth = 0
 room_arr = ["Cozy Room", "Tech Room"]
@@ -19,8 +20,14 @@ def buy_room(index):
         "cost": room_arr_cost[index],
         "room": room_name_arr[index],
     }
+    the_min, the_max = get_user_networth_min_max()
+    new_nw = net_worth - room_arr_cost[index]
     response = requests.post(f"{SERVER_URL}/profile/buyroom/{get_profile()['id']}", json=data)
     if response.status_code == 200:
+        if new_nw < the_min:
+            send_networth_email(new_nw, the_min, -1)
+        elif new_nw > the_max:
+            send_networth_email(new_nw, -1, the_max)
         error = "Success!"
         net_worth = float(get_profile()['net_worth'])
     else:
