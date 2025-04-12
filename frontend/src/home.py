@@ -73,38 +73,72 @@ def initialize_home(ui_manager):
 
     #Create "Sign out" button
     sign_out_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 120), (160, 50)),
+        relative_rect=pygame.Rect((SCREEN_WIDTH - 160, 60), (160, 50)),
         text="Signout",
         manager=ui_manager,
         object_id="sign_out_button",
     )
     button_mapping[sign_out_button] = "Signout"
 
-    music_shop_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 180), (180, 50)),
-        text="Music Shop",
+    # music_shop_btn = pygame_gui.elements.UIButton(
+    #     relative_rect=pygame.Rect((0, 180), (180, 50)),
+    #     text="Music Shop",
+    #     manager=ui_manager,
+    #     object_id="music_shop_btn",
+    # )
+    # button_mapping[music_shop_btn] = "Music Shop"
+    # shirt_shop_btn = pygame_gui.elements.UIButton(
+    #     relative_rect=pygame.Rect((0, 240), (180, 50)),
+    #     text="Shirt Shop",
+    #     manager=ui_manager,
+    #     object_id="shirt_shop_btn",
+    # )
+    # room_shop_btn = pygame_gui.elements.UIButton(
+    #     relative_rect=pygame.Rect((0, 300), (180, 50)),
+    #     text="Room Shop",
+    #     manager=ui_manager,
+    #     object_id="room_shop_btn",
+    # )
+    # theme_shop_btn = pygame_gui.elements.UIButton(
+    #     relative_rect=pygame.Rect((0, 360), (180, 50)),
+    #     text="Theme Shop",
+    #     manager=ui_manager,
+    #     object_id="theme_shop_btn",
+    # )
+
+
+    # Cosmetic shop buttons (hidden by default)
+    cosmetic_buttons = []
+    cosmetic_button_mapping = [
+        {"id": "music_shop_btn", "text": "Music Shop"},
+        {"id": "shirt_shop_btn", "text": "Shirt Shop"},
+        {"id": "room_shop_btn", "text": "Room Shop"},
+        {"id": "theme_shop_btn", "text": "Theme Shop"}
+    ]
+
+    y_cosmetic = 180
+    for button_data in cosmetic_button_mapping:
+        button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, y_cosmetic), (180, 50)),
+            text=button_data["text"],
+            manager=ui_manager,
+            object_id=button_data["id"]
+        )
+        button.hide()  # Start collapsed (hidden)
+        cosmetic_buttons.append(button)
+        y_cosmetic += 60  # Adjust spacing
+
+    # Create the toggle button for cosmetic shops
+    toggle_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((0, 120), (180, 50)),
+        text="Shops",
         manager=ui_manager,
-        object_id="music_shop_btn",
+        object_id="toggle_cosmetic_btn"
     )
-    button_mapping[music_shop_btn] = "Music Shop"
-    shirt_shop_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 240), (180, 50)),
-        text="Shirt Shop",
-        manager=ui_manager,
-        object_id="shirt_shop_btn",
-    )
-    room_shop_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 300), (180, 50)),
-        text="Room Shop",
-        manager=ui_manager,
-        object_id="room_shop_btn",
-    )
-    theme_shop_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 360), (180, 50)),
-        text="Theme Shop",
-        manager=ui_manager,
-        object_id="theme_shop_btn",
-    )
+
+    button_mapping[toggle_button] = cosmetic_buttons  # Link toggle button to cosmetic buttons
+
+
 
     draw_home_friends_button(ui_manager)
     profile_button = draw_view_profile_button(ui_manager)
@@ -192,6 +226,19 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = "room"
             elif "Theme" in event.ui_element.text:
                 selected_game = "theme"
+            elif "Shops" in event.ui_element.text: 
+                cosmetic_buttons = button_mapping[event.ui_element]
+                if any(button.visible for button in cosmetic_buttons):  # If expanded
+                    # Collapse the list
+                    for button in cosmetic_buttons:
+                        button.hide()
+                    event.ui_element.set_text("Shops")  # Set to collapsed state
+                else:
+                    # Expand the list
+                    for button in cosmetic_buttons:
+                        button.show()
+                    event.ui_element.set_text("Close Shops")  # Set to expanded state
+
             else:
                 selected_game = "underDev"
             
