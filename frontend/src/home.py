@@ -228,12 +228,17 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = "theme"
             elif "Shops" in event.ui_element.text: 
                 cosmetic_buttons = button_mapping[event.ui_element]
-                # Toggle visibility of cosmetic shop buttons
-                for button in cosmetic_buttons:
-                    if button.visible:
+                if any(button.visible for button in cosmetic_buttons):  # If expanded
+                    # Collapse the list
+                    for button in cosmetic_buttons:
                         button.hide()
-                    else:
+                    event.ui_element.set_text("Shops")  # Set to collapsed state
+                else:
+                    # Expand the list
+                    for button in cosmetic_buttons:
                         button.show()
+                    event.ui_element.set_text("Close Shops")  # Set to expanded state
+
             else:
                 selected_game = "underDev"
             
