@@ -40,6 +40,7 @@ losing_sound = pygame.mixer.Sound("./frontend/assets/effects/losing.wav")
 money_sound = pygame.mixer.Sound("./frontend/assets/effects/money.wav")
 play_sound_effects = True
 result_notifications = False
+current_width, current_height = 0, 0
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -222,12 +223,12 @@ def clear_table_elements():
 
 def draw_bet_history(ui_manager):
     """Displays the bet history table."""
-    global bet_history, table_elements
+    global bet_history, table_elements, current_height
 
     date_options = ["All", "30s", "1m", "1h"]
     sort_options = ["None", "Largest", "Smallest"]
 
-    dropdown_y = SCREEN_HEIGHT - 300  # adjust as needed
+    dropdown_y = current_height - 300  # adjust as needed
 
     # Create drop-down for date filter.
     dropdown_date = pygame_gui.elements.UIDropDownMenu(
@@ -258,42 +259,47 @@ def draw_bet_history(ui_manager):
     container_height = container_total_height - header_height
 
     # Y-position for the headers (absolute on the screen)
-    header_y = SCREEN_HEIGHT - 220
+    header_y = current_height - 220
+    header_x = (current_width - 600) // 2
 
     # Create and store header elements in table_elements.
     table_elements["header_date"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((100, header_y, 200, header_height)),
+        relative_rect=pygame.Rect((header_x, header_y, 200, header_height)),
         text="Date",
         manager=ui_manager,
         object_id="#label"
     )
+    header_x += 200  # Move to the next column
     table_elements["header_horse"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((300, header_y, 150, header_height)),
+        relative_rect=pygame.Rect((header_x, header_y, 150, header_height)),
         text="Horse",
         manager=ui_manager,
         object_id="#label"
     )
+    header_x += 150  # Move to the next column
     table_elements["header_odds"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((450, header_y, 75, header_height)),
+        relative_rect=pygame.Rect((header_x, header_y, 75, header_height)),
         text="Odds",
         manager=ui_manager,
         object_id="#label"
     )
+    header_x += 75  # Move to the next column
     table_elements["header_amount"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((525, header_y, 100, header_height)),
+        relative_rect=pygame.Rect((header_x, header_y, 100, header_height)),
         text="Amount",
         manager=ui_manager,
         object_id="#label"
     )
+    header_x += 100  # Move to the next column
     table_elements["header_outcome"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((625, header_y, 75, header_height)),
+        relative_rect=pygame.Rect((header_x, header_y, 75, header_height)),
         text="Outcome",
         manager=ui_manager,
         object_id="#label"
     )
 
     # Create a scrolling container for just the bet rows.
-    scroll_container_rect = pygame.Rect(0, header_y + header_height, 700, container_height)
+    scroll_container_rect = pygame.Rect(0, header_y + header_height, current_width * .9 , container_height)
     row_height = 40
     content_height = row_height * len(bet_history)
     scroll_container = pygame_gui.elements.UIScrollingContainer(
@@ -309,26 +315,30 @@ def draw_bet_history(ui_manager):
     # Add bet rows inside the scrolling container.
     y_offset = 0  # container-relative coordinates
     for bet in display_bets:
+        x_offset = (current_width - 600) // 2
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((100, y_offset, 200, row_height)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 200, row_height)),
             text=bet["date"],
             manager=ui_manager,
             container=scroll_container
         )
+        x_offset += 200  # Move to the next column
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((300, y_offset, 150, row_height)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 150, row_height)),
             text=bet["horse"],
             manager=ui_manager,
             container=scroll_container
         )
+        x_offset += 150  # Move to the next column
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((450, y_offset, 75, row_height)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 75, row_height)),
             text=f"{bet['odds']}x",
             manager=ui_manager,
             container=scroll_container
         )
+        x_offset += 75  # Move to the next column
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((525, y_offset, 100, row_height)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 100, row_height)),
             text=f"${bet['amount']}",
             manager=ui_manager,
             container=scroll_container
@@ -340,8 +350,9 @@ def draw_bet_history(ui_manager):
             outcome_text = "L"
         else:
             outcome_text = "~"
+        x_offset += 100  # Move to the next column
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((625, y_offset, 75, row_height)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 75, row_height)),
             text=outcome_text,
             manager=ui_manager,
             container=scroll_container
@@ -356,31 +367,35 @@ def draw_bet_history(ui_manager):
 
 def draw_betting_table(ui_manager):
     """Displays the betting table with available horses and tracks elements for clearing."""
-    global bet_buttons, table_elements, pending_bets
+    global bet_buttons, table_elements, pending_bets, current_height
 
-    y_offset = SCREEN_HEIGHT - 180
+    y_offset = current_height - 180
+    x_offset = (current_width- 600) // 2
 
     # **Table Headers**
     table_elements["header_name"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((100, SCREEN_HEIGHT - 220, 200, 30)),  # Wider name column
+        relative_rect=pygame.Rect((x_offset, current_height - 220, 200, 30)),  # Wider name column
         text="Horse Name",
         manager=ui_manager,
         object_id="#label"
     )
+    x_offset += 200  # Move to the next column
     table_elements["header_color"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((300, SCREEN_HEIGHT - 220, 100, 30)),  # Increased column width
+        relative_rect=pygame.Rect((x_offset, current_height - 220, 100, 30)),  # Increased column width
         text="Color",
         manager=ui_manager,
         object_id="#label"
     )
+    x_offset += 100  # Move to the next column
     table_elements["header_odds"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((400, SCREEN_HEIGHT - 220, 100, 30)),  # More space for odds
+        relative_rect=pygame.Rect((x_offset, current_height - 220, 100, 30)),  # More space for odds
         text="Odds",
         manager=ui_manager,
         object_id="#label"
     )
+    x_offset += 100  # Move to the next column
     table_elements["header_bet"] = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((500, SCREEN_HEIGHT - 220, 200, 30)),  # Wider column for betting
+        relative_rect=pygame.Rect((x_offset, current_height - 220, 200, 30)),  # Wider column for betting
         text="Bet",
         manager=ui_manager,
         object_id="#label"
@@ -388,41 +403,48 @@ def draw_betting_table(ui_manager):
 
     # **Generate Full-Width Table Rows**
     for i, horse in enumerate(horses):
+        x_offset = (current_width- 600) // 2
         horse_name = horse["name"]
 
         table_elements[f"horse_name_{i}"] = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((100, y_offset, 200, 30)),  # Wider name column
+            relative_rect=pygame.Rect((x_offset, y_offset, 200, 30)),  # Wider name column
             text=horse["name"],
             manager=ui_manager
         )
+        x_offset += 200  # Move to the next column
         table_elements[f"horse_color_{i}"] = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((300, y_offset, 100, 30)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 100, 30)),
             text=horse["color"],
             manager=ui_manager
         )
+        x_offset += 100  # Move to the next column
         table_elements[f"horse_odds_{i}"] = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((400, y_offset, 100, 30)),
+            relative_rect=pygame.Rect((x_offset, y_offset, 100, 30)),
             text=f"{horse['odds']}x",
             manager=ui_manager
         )
         # **Bet Controls**
+        x_offset += 100  # Move to the next column
         table_elements[f"bet_decrement_{i}"] = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((500, y_offset, 30, 30)),  # - Button
+            relative_rect=pygame.Rect((x_offset, y_offset, 30, 30)),  # - Button
             text="-",
             manager=ui_manager
         )
+        x_offset += 30  # Move to the next column
         table_elements[f"bet_input_{i}"] = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((530, y_offset, 70, 30)),  # Bet amount input
+            relative_rect=pygame.Rect((x_offset, y_offset, 70, 30)),  # Bet amount input
             manager=ui_manager
         )
+        x_offset += 70  # Move to the next column
         table_elements[f"bet_input_{i}"].set_text(str(pending_bets[horse_name]))
         table_elements[f"bet_increment_{i}"] = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((600, y_offset, 30, 30)),  # + Button
+            relative_rect=pygame.Rect((x_offset, y_offset, 30, 30)),  # + Button
             text="+",
             manager=ui_manager
         )
+        x_offset += 30  # Move to the next column
         table_elements[f"bet_confirm_{i}"] = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((630, y_offset, 70, 30)),  # Confirm Bet
+            relative_rect=pygame.Rect((x_offset, y_offset, 70, 30)),  # Confirm Bet
             text="Confirm",
             manager=ui_manager,
             object_id="confirm-button"
@@ -504,7 +526,8 @@ def initialize_game(ui_manager):
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
-    global rumor_button, insider_button, sound_toggle_button
+    global rumor_button, insider_button, sound_toggle_button, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     global result_notifications
     result_notifications = get_user_notification_preferences_results()
     user = get_profile()
@@ -555,7 +578,7 @@ def initialize_game(ui_manager):
 
     # Timer label to show countdown to next race
     race_timer_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, 20, 200, 30)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, 20, 200, 30)),
         text="Next Race: 60s",
         manager=ui_manager,
         object_id="#timer_label"
@@ -563,21 +586,21 @@ def initialize_game(ui_manager):
 
     #message label
     message_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 250, 260, 500, 30)),
+        relative_rect=pygame.Rect((current_width // 2 - 250, 260, 500, 30)),
         text="",
         manager=ui_manager,
         object_id="#label"
     )
 
     set_limit_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 230, SCREEN_HEIGHT - 280, 100, 30)),
+        relative_rect=pygame.Rect((current_width - 230, current_height - 280, 100, 30)),
         text="Set",
         manager=ui_manager,
         object_id="set-limit-button"
     )
 
     remove_limit_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 120, SCREEN_HEIGHT - 280, 100, 30)),  
+        relative_rect=pygame.Rect((current_width - 120, current_height - 280, 100, 30)),  
         text="Remove",
         manager=ui_manager,
         object_id="remove-limit-button"
@@ -585,7 +608,7 @@ def initialize_game(ui_manager):
 
 
     limit_entry = pygame_gui.elements.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 230, SCREEN_HEIGHT - 320, 210, 30)),  
+        relative_rect=pygame.Rect((current_width - 230, current_height - 320, 210, 30)),  
         manager=ui_manager,
         object_id="limit-entry"
     )
@@ -593,14 +616,14 @@ def initialize_game(ui_manager):
 
 
     history_toggle_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, SCREEN_HEIGHT - 40, 200, 40)),
+        relative_rect=pygame.Rect((0, current_height - 40, 200, 40)),
         text="View Bet History",
         manager=ui_manager,
         object_id="toggle-button"
     )
 
     insider_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 200, SCREEN_HEIGHT - 40, 200, 40)),  # Positioned close to the bottom-right
+        relative_rect=pygame.Rect((current_width - 200, current_height - 40, 200, 40)),  # Positioned close to the bottom-right
         text="Insider $50",
         manager=ui_manager,
         object_id="insider-button"
@@ -608,7 +631,7 @@ def initialize_game(ui_manager):
 
 
     rumor_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 410, SCREEN_HEIGHT - 40, 200, 40)),  # Positioned next to Insider Message
+        relative_rect=pygame.Rect((current_width - 410, current_height - 40, 200, 40)),  # Positioned next to Insider Message
         text="Rumor $20",
         manager=ui_manager,
         object_id="rumor-button"
@@ -704,13 +727,14 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
     global bet_history, race_start_time, bets_placed, message_label, winner_announced, net_worth
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, current_date_filter, current_sort_order
+    global current_width, current_height
     draw_game_background(screen)
 
     # Show game and balance info
     game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)
     balance_text = FONT.render(f"Balance: ${net_worth:.2f}", True, WHITE)
-    screen.blit(game_text, (SCREEN_WIDTH // 2 - game_text.get_width() // 2, 50))
-    screen.blit(balance_text, (500, 10))
+    screen.blit(game_text, (current_width // 2 - game_text.get_width() // 2, 50))
+    screen.blit(balance_text, (current_width - balance_text.get_width(), 10))
 
     # Time logic
     now = datetime.datetime.now()
@@ -768,7 +792,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         race_timer_label.set_text(f"Next Race: {time_remaining}s")
 
         note = FONT.render(f"Not available until race starts", True, WHITE)
-        text_rect = note.get_rect(center=(SCREEN_WIDTH // 2, 225))  # Center in the white box
+        text_rect = note.get_rect(center=(current_width // 2, 225))  # Center in the white box
     
         # Render the text inside the box
         screen.blit(note, text_rect)
@@ -776,7 +800,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         race_timer_label.set_text(f"Race beginned: {time_elapsed - 20}s")
 
     # Draw race box
-    pygame.draw.rect(screen, WHITE, (50, 100, SCREEN_WIDTH - 100, 150), 2)  # White border
+    pygame.draw.rect(screen, WHITE, (50, 100, current_width - 100, 150), 2)  # White border
     y_offset = 120
 
     # Handle race animation inside the box
@@ -790,8 +814,8 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 speed = random.randint(1, 10 - int(horse_odds)) / 2 # Higher odds → slower movement
 
             horse_positions[horse_name] += speed
-            if horse_positions[horse_name] >= SCREEN_WIDTH - 150:
-                horse_positions[horse_name] = SCREEN_WIDTH - 150
+            if horse_positions[horse_name] >= current_width - 150:
+                horse_positions[horse_name] = current_width - 150
         pygame.draw.rect(screen, pygame.Color(horse["color"]), (horse_positions[horse_name], y_offset, 16, 16))
         y_offset += 20
 

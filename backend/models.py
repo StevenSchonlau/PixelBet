@@ -56,6 +56,8 @@ class User(db.Model):
     active_theme = db.Column(db.Integer, default=0)
     owns_themes = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=True, default=None)
+    resolution_width  = db.Column(db.Integer, nullable=False, default=800)
+    resolution_height = db.Column(db.Integer, nullable=False, default=600)
 
     has_time_limit = db.Column(db.Boolean, default=False)
     time_limit = db.Column(NUMERIC(precision=12, scale=0), nullable=False, default=0)

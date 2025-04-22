@@ -15,32 +15,18 @@ rec_pending = []
 curr_player = None
 selected_player = None
 initialized = False
+current_width, current_height = 0, 0
 
 def refresh_data(ui_manager):
     get_all_players()
     get_friends(ui_manager)
     get_rec(ui_manager)
 
-
-def draw_home_friends_button(ui_manager):
-    text_surface = FONT.render("Friends", True, WHITE)
-    button_width = text_surface.get_width() + 40
-    button_height = text_surface.get_height() + 20
-    button_x = SCREEN_WIDTH - button_width
-    button_y = SCREEN_HEIGHT - button_height
-    
-    button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
-        text="Friends",
-        manager=ui_manager,
-        object_id="#friends",
-    )
-
 def draw_search_panel(ui_manager):
-    global ui_dict
+    global ui_dict, current_width, current_height
     search_panel_rect = pygame.Rect(
-        (SCREEN_WIDTH * 0.55, SCREEN_HEIGHT * 0.65),
-        (SCREEN_WIDTH * 0.4, SCREEN_HEIGHT * 0.2)
+        (current_width * 0.55, current_height * 0.65),
+        (current_width * 0.4, current_height * 0.2)
     )
     search_panel = pygame_gui.elements.UIPanel(
         relative_rect=search_panel_rect,
@@ -70,9 +56,10 @@ def draw_search_panel(ui_manager):
     return search_panel
 
 def draw_requests_panel(ui_manager):
+    global current_width, current_height
     requests_panel_rect = pygame.Rect(
-        (SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.65),
-        (SCREEN_WIDTH * 0.4, SCREEN_HEIGHT * 0.3)
+        (current_width * 0.05, current_height * 0.65),
+        (current_width * 0.4, current_height * 0.3)
     )
     requests_panel = pygame_gui.elements.UIPanel(
         relative_rect=requests_panel_rect,
@@ -100,9 +87,10 @@ def draw_requests_panel(ui_manager):
     return requests_panel
 
 def draw_friends_panel(ui_manager):
+    global current_width, current_height
     friends_list_panel_rect = pygame.Rect(
-        (SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.2),
-        (SCREEN_WIDTH * 0.9, SCREEN_HEIGHT * 0.4)
+        (current_width * 0.05, current_height * 0.2),
+        (current_width * 0.9, current_height * 0.4)
     )
     friends_list_panel = pygame_gui.elements.UIPanel(
         relative_rect=friends_list_panel_rect,
@@ -131,8 +119,9 @@ def draw_friends_panel(ui_manager):
 
 
 def init_friends_page(ui_manager):
-    global ui_dict, curr_player
+    global ui_dict, curr_player, current_height, current_width
     ui_manager.clear_and_reset()
+    current_width, current_height = pygame.display.get_window_size()
     profile = get_profile()
     curr_player = User(profile["username"], profile["id"])
     ui_dict = {}
@@ -382,7 +371,7 @@ def accept_request(user_id):
         error = response.json()["message"]
 
 def draw_friends_page(screen, events, ui_manager, selected_game):
-    global error, selected_player, initialized
+    global error, selected_player, initialized, current_width, current_height
 
     if selected_player:
         if not initialized:
@@ -409,7 +398,7 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
                     ui_dict["search_result"] = None
                 if friend:
                     result_button = pygame_gui.elements.UIButton(
-                        relative_rect=pygame.Rect((SCREEN_WIDTH*0.4*.05, SCREEN_HEIGHT*0.2*.6), (SCREEN_WIDTH*0.4*.9, SCREEN_HEIGHT*0.2*.3)),
+                        relative_rect=pygame.Rect((current_width*0.4*.05, current_height*0.2*.6), (current_width*0.4*.9, current_height*0.2*.3)),
                         text=f"{friend.username}",
                         manager=ui_manager,
                         container=ui_dict["search_panel"],
@@ -449,7 +438,7 @@ def draw_friends_page(screen, events, ui_manager, selected_game):
 
     if error:
         error_name = FONT.render(error, True, WHITE)
-        screen.blit(error_name, ((SCREEN_WIDTH // 8) * 2, (SCREEN_HEIGHT // 8) * 0))
+        screen.blit(error_name, ((current_width // 8) * 2, (current_height // 8) * 0))
 
 
     pygame.display.flip()

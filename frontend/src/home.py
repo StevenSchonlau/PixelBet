@@ -4,10 +4,10 @@ import datetime
 import random
 from constants import *
 from profileView import draw_view_profile_button
-from friendsList import draw_home_friends_button
 from leaderboard import draw_leaderboard_button
 from login import clear_user
 from notifications import get_user_notification_preferences
+from settings import set_resolution_marker
 
 import multipleGames
 
@@ -31,6 +31,8 @@ current_games = [
     {"name": GAME_NAMES.pop()}
 ]
 button_mapping = {}
+current_width = 0
+current_height = 0
 
                  
 notification_email_sent = False
@@ -45,16 +47,17 @@ def send_notification_email():
 
 def initialize_home(ui_manager):
     """Initializes the home screen with dynamically generated game buttons."""
-    global button_mapping
+    global button_mapping, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     ui_manager.clear_and_reset()
     button_mapping.clear()
     y_offset = 150
     spacing = 20
+    button_width = 400
     
-    # Create game buttons with dynamic sizing based on text width
     for game in current_games:
         button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((200, y_offset), (400, 40)),
+            relative_rect=pygame.Rect((current_width // 2 - button_width // 2, y_offset), (button_width, 40)),
             text=game["name"],
             manager=ui_manager,
             object_id="#game-button",
@@ -64,7 +67,7 @@ def initialize_home(ui_manager):
     
     # Create "Mine Crypto" button
     crypto_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((0, 550), (200, 50)),
+        relative_rect=pygame.Rect((0, current_height - 50), (200, 50)),
         text="Mine Crypto",
         manager=ui_manager,
         object_id="#crypto-button",
@@ -73,12 +76,20 @@ def initialize_home(ui_manager):
 
     #Create "Sign out" button
     sign_out_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH - 160, 60), (160, 50)),
+        relative_rect=pygame.Rect((current_width - 160, 60), (160, 50)),
         text="Signout",
         manager=ui_manager,
         object_id="sign_out_button",
     )
     button_mapping[sign_out_button] = "Signout"
+
+    settings_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width - 160, 120), (160, 50)),
+        text="Settings",
+        manager=ui_manager,
+        object_id="settings_button",
+    )
+    button_mapping[settings_button] = "Settings"
 
     # music_shop_btn = pygame_gui.elements.UIButton(
     #     relative_rect=pygame.Rect((0, 180), (180, 50)),
@@ -140,12 +151,25 @@ def initialize_home(ui_manager):
 
 
 
-    draw_home_friends_button(ui_manager)
+    # Create "Friends" button
+    text_surface = FONT.render("Friends", True, WHITE)
+    button_width = text_surface.get_width() + 40
+    button_height = text_surface.get_height() + 20
+    button_x = current_width - button_width
+    button_y = current_height - button_height
+    
+    friend_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
+        text="Friends",
+        manager=ui_manager,
+        object_id="#friends",
+    )
+    button_mapping[friend_button] = "Friends"
     profile_button = draw_view_profile_button(ui_manager)
     draw_leaderboard_button(ui_manager, profile_button)
     # Create "Multiple Games" button
     multiple_games_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 500), (400, 50)),  # Centered with width 400
+        relative_rect=pygame.Rect((current_width // 2 - 200, current_height - 50), (400, 50)), 
         text="Multiple Games",
         manager=ui_manager,
         object_id="#multiple-games-button"
@@ -185,18 +209,19 @@ def update_games():
 
 
 def draw_clock(screen):
+    global current_width
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     clock_surface = FONT.render(current_time, True, WHITE)
-    screen.blit(clock_surface, (SCREEN_WIDTH - 120, 10))
+    screen.blit(clock_surface, (current_width - 120, 10))
 
 def draw_home_screen(screen, events, ui_manager):
-    global selected_game, current_screen
+    global selected_game, current_screen, current_width
     current_screen = "home"
     selected_game = None
     draw_background(screen)
     
     title_text = FONT.render("Select a Game", True, WHITE)
-    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+    screen.blit(title_text, (current_width // 2 - title_text.get_width() // 2, 50))
     
     # Process button clicks
     for event in events:
@@ -218,6 +243,19 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = event.ui_element.text
             elif "Signout" in event.ui_element.text:
                 clear_user()
+                pygame.display.set_mode((800,600))
+                set_resolution_marker(False)
+            elif "Settings" in event.ui_element.text:
+                print("Settings button clicked")
+                selected_game = "settings"
+            elif "Music" in event.ui_element.text and "Shops" not in event.ui_element.text:
+                selected_game = "music"
+            elif "Shirt" in event.ui_element.text and "Shops" not in event.ui_element.text:
+                selected_game = "shirt"
+            elif "Room" in event.ui_element.text and "Shops" not in event.ui_element.text:
+                selected_game = "room"
+            elif "Theme" in event.ui_element.text and "Shops" not in event.ui_element.text:
+                selected_game = "theme"
             elif "Music" in event.ui_element.text:
                 selected_game = "music"
             elif "Shirt" in event.ui_element.text:

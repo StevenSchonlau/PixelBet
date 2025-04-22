@@ -29,25 +29,30 @@ DERBY_NAMES = [
     "Sunset Sprint Derby", "Thundering Tracks Derby"
 ]
 selected_derbies = []
+current_height, current_width = 0, 0
 
 def prompt_user_for_derbies(ui_manager):
     """Prompts the user to select derbies to display."""
     ui_manager.clear_and_reset()
-    global derby_buttons, confirm_button, selected_derbies
+    global derby_buttons, confirm_button, selected_derbies, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     # Reset the selected derbies list
     selected_derbies = []
     derby_buttons = []
     y_offset = 150
     spacing = 20
+    
     for derby in DERBY_NAMES:
+        x_offset = (current_width - 400) // 2
         UILabel(
-            relative_rect=pygame.Rect((50, y_offset), (300, 40)),
+            relative_rect=pygame.Rect((x_offset, y_offset), (300, 40)),
             text=derby,
             manager=ui_manager,
             object_id=f"#label-{derby.replace(' ', '-').lower()}"
         )
+        x_offset += 300
         button = UIButton(
-            relative_rect=pygame.Rect((360, y_offset), (100, 40)),
+            relative_rect=pygame.Rect((x_offset, y_offset), (100, 40)),
             text="Select",
             manager=ui_manager,
             object_id=f"#select-button-{derby.replace(' ', '-').lower()}"
@@ -55,7 +60,7 @@ def prompt_user_for_derbies(ui_manager):
         derby_buttons.append(button)
         y_offset += 40 + spacing
     confirm_button = UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100), (200, 50)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, current_height - 50), (200, 50)),
         text="Confirm",
         manager=ui_manager,
         object_id="#confirm-button"
@@ -64,10 +69,11 @@ def prompt_user_for_derbies(ui_manager):
 def initialize_games(ui_manager):
     """Initializes the multiple games screen with selected derbies in a scrollable view."""
     ui_manager.clear_and_reset()
-    global back_button
+    global back_button, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     # Set fixed dimensions for the scrolling container
-    container_width = 700
-    container_height = 490
+    container_width = current_width * .9
+    container_height = current_height * .7
     panel_height = 160  # Height for each game panel
     total_content_height = len(selected_derbies) * panel_height  # Compute total height needed
 
@@ -135,7 +141,7 @@ def initialize_games(ui_manager):
 
     # Back button (outside of the scrolling container)
     back_button = UIButton(
-        relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
+        relative_rect=pygame.Rect((20, current_height - 60), (100, 40)),
         text="Back",
         manager=ui_manager
     )

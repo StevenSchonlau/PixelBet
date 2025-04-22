@@ -11,6 +11,7 @@ owns_shirts_list = []
 back_btn = None
 shirt_buttons = []
 error = None
+current_width, current_height = 0,0
 
 def buy_shirt(index):
     global error, net_worth
@@ -32,7 +33,8 @@ def buy_shirt(index):
         error = "An error occurred"
 
 def initialize_shirt_shop(ui_manager):
-    global net_worth, owns_shirts_list, back_btn, shirt_buttons
+    global net_worth, owns_shirts_list, back_btn, shirt_buttons, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     ui_manager.clear_and_reset()
     user = get_profile()
     net_worth = float(user['net_worth'])
@@ -40,14 +42,14 @@ def initialize_shirt_shop(ui_manager):
     print(owns_shirts_list)
     for index, shirt in enumerate(shirt_arr):
         shirt_buttons.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * index + 200), (400, 40)),
+            relative_rect=pygame.Rect((current_width // 2 - 200, 100 * index + 200), (400, 40)),
             text=f"${shirt_arr_cost[index]} {shirt}",
             manager=ui_manager,
             object_id=f"#shirt_btn_{index}",
             visible=True
         ))
         back_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 * 3, 100), (100, 40)),
+            relative_rect=pygame.Rect((current_width // 4 * 3, 100), (100, 40)),
             text="Back",
             manager=ui_manager,
             object_id="#Back",
@@ -55,13 +57,13 @@ def initialize_shirt_shop(ui_manager):
         )
 
 def draw_shirt_shop(screen, events, ui_manager):
-    global net_worth, error, shirt_buttons
+    global net_worth, error, shirt_buttons, current_width, current_height
     draw_background(screen)
     title_text_pixel_bet = FONT.render("Shirt Shop", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
+    screen.blit(title_text_pixel_bet, (current_width // 2 - title_text_pixel_bet.get_width() // 2, 50))
     
     title_text_pixel_bet = FONT.render(f"Money: ${net_worth:.2f}", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 100))
+    screen.blit(title_text_pixel_bet, (current_width // 2 - title_text_pixel_bet.get_width() // 2, 100))
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == back_btn:
@@ -81,7 +83,7 @@ def draw_shirt_shop(screen, events, ui_manager):
 
     if error:
         error_name = FONT.render(error, True, WHITE)
-        screen.blit(error_name, ((SCREEN_WIDTH // 8) * 1, (SCREEN_HEIGHT // 8) * 6))
+        screen.blit(error_name, ((current_width // 8) * 1, (current_height // 8) * 6))
                 
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)

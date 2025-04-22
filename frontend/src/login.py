@@ -95,35 +95,35 @@ def initialize_login(ui_manager):
     text_surface = FONT.render("Login", True, WHITE)
     global login_btn 
     login_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 5), (SCREEN_WIDTH // 2,50)),
+        relative_rect=pygame.Rect((screen_width // 4 , screen_height // 8 * 5), (screen_width // 2,50)),
         text="Login",
         manager=ui_manager,
         object_id="login",
     )
     global username_field
     username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 3), (SCREEN_WIDTH // 2,50)),
+        relative_rect=pygame.Rect((screen_width // 4 , screen_height // 8 * 3), (screen_width // 2,50)),
         manager=ui_manager,
         object_id="username",
         placeholder_text="username"
     )
     global password_field
     password_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 4), (SCREEN_WIDTH // 2,50)),
+        relative_rect=pygame.Rect((screen_width // 4 , screen_height // 8 * 4), (screen_width // 2,50)),
         manager=ui_manager,
         object_id="password",
         placeholder_text="password"
     )
     global sign_up_screen_btn 
     sign_up_screen_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 6), (SCREEN_WIDTH // 2,50)),
+        relative_rect=pygame.Rect((screen_width // 4 , screen_height // 8 * 6), (screen_width // 2,50)),
         text="Sign Up",
         manager=ui_manager,
         object_id="sign_up_screen",
     )
     global reset_password_btn 
     reset_password_btn = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 7), (SCREEN_WIDTH // 2,50)),
+        relative_rect=pygame.Rect((screen_width // 4 , screen_height // 8 * 7), (screen_width // 2,50)),
         text="Reset Password",
         manager=ui_manager,
         object_id="password_reset",
@@ -132,13 +132,13 @@ def initialize_login(ui_manager):
 def draw_login_screen(screen, events, ui_manager):
     draw_background(screen)
     title_text = FONT.render("Login", True, WHITE)
-    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 100))
+    screen.blit(title_text, (screen_width // 2 - title_text.get_width() // 2, 100))
 
     title_text_pixel_bet = FONT.render("PixelBet", True, GREEN)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
+    screen.blit(title_text_pixel_bet, (screen_width // 2 - title_text_pixel_bet.get_width() // 2, 50))
     global error_message
     fail_text = FONT.render(error_message, True, WHITE)
-    screen.blit(fail_text, (SCREEN_WIDTH // 2 - fail_text.get_width() // 2, SCREEN_HEIGHT // 8 * 2))
+    screen.blit(fail_text, (screen_width // 2 - fail_text.get_width() // 2, screen_height // 8 * 2))
 
 
     for event in events:
@@ -150,9 +150,9 @@ def draw_login_screen(screen, events, ui_manager):
                 error_message = "Loading..."
                 draw_background(screen)
                 title_text = FONT.render("Login", True, WHITE)
-                screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+                screen.blit(title_text, (screen_width // 2 - title_text.get_width() // 2, 50))
                 error_message_text = FONT.render(error_message, True, WHITE)
-                screen.blit(error_message_text, (SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * 2))
+                screen.blit(error_message_text, (screen_width // 4 , screen_height // 8 * 2))
                 ui_manager.update(1 / 60)
                 ui_manager.draw_ui(screen)
 

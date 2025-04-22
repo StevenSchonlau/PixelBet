@@ -12,6 +12,7 @@ btns = [] #holds buttons for each to buy/select if (un)owned
 music_owned = [] #1's and 0's for owning or not owning music respectively
 the_net_worth = 0
 selected_btn = -1
+current_width, current_height = 0, 0
 
 def get_music_owned():
     #get the music owned and append 0 to music_owned if unowned, 1 if owned
@@ -65,7 +66,8 @@ def get_selected_music():
 def initialize_music_shop(ui_manager):
     ui_manager.clear_and_reset()
     get_music_owned()
-    global the_net_worth
+    global the_net_worth, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     the_net_worth = fetch_net_worth()
     selected_music = get_selected_music()
     #render name, button, and price for each 
@@ -74,7 +76,7 @@ def initialize_music_shop(ui_manager):
     for m in range(0, len(music_arr)):
         if music_arr[m] == selected_music:
             btns.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
+            relative_rect=pygame.Rect((current_width // 2 - 200, 100 * m + 200), (400, 40)),
             text="Selected " + music_arr[m],
             manager=ui_manager,
             object_id="#Selected" + str(m),
@@ -82,7 +84,7 @@ def initialize_music_shop(ui_manager):
             ))
         elif music_owned[m] == 0:
             btns.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
+            relative_rect=pygame.Rect((current_width // 2 - 200, 100 * m + 200), (400, 40)),
             text="Buy " + music_arr[m] + " for $" + str(music_arr_cost[m]),
             manager=ui_manager,
             object_id="#Buy" + str(m),
@@ -90,7 +92,7 @@ def initialize_music_shop(ui_manager):
             )) #add new button per music_arr
         else:
             btns.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * m + 200), (400, 40)),
+            relative_rect=pygame.Rect((current_width // 2 - 200, 100 * m + 200), (400, 40)),
             text="Select " + music_arr[m],
             manager=ui_manager,
             object_id="#Select" + str(m),
@@ -98,7 +100,7 @@ def initialize_music_shop(ui_manager):
             )) #add new button per music_arr
     global back_btn
     back_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 * 3, 100), (100, 40)),
+            relative_rect=pygame.Rect((current_width // 4 * 3, 100), (100, 40)),
             text="Back",
             manager=ui_manager,
             object_id="#Back",
@@ -111,12 +113,13 @@ def initialize_music_shop(ui_manager):
 
 
 def draw_music_shop(screen, events, ui_manager):
+    global current_width, current_height
     draw_background(screen)
     title_text_pixel_bet = FONT.render("Music Shop", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
+    screen.blit(title_text_pixel_bet, (current_width // 2 - title_text_pixel_bet.get_width() // 2, 50))
     
     title_text_pixel_bet = FONT.render(f"Money: ${the_net_worth:.2f}", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 100))
+    screen.blit(title_text_pixel_bet, (current_width // 2 - title_text_pixel_bet.get_width() // 2, 100))
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             global btns, music_arr, music_owned
@@ -128,7 +131,7 @@ def draw_music_shop(screen, events, ui_manager):
                         val = buy_music(b)
                         if val:
                             btns[b] = pygame_gui.elements.UIButton(
-                            relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 200, 100 * b + 200), (400, 40)),
+                            relative_rect=pygame.Rect((current_width // 2 - 200, 100 * b + 200), (400, 40)),
                             text="Select " + music_arr[b],
                             manager=ui_manager,
                             object_id="#Select" + str(b),

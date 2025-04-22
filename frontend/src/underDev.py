@@ -26,7 +26,7 @@ def draw_underDev_screen(screen, events, ui_manager, selected_game):
 
     # Show game and balance info
     game_text = FONT.render(f"Current Game is under development", True, WHITE)
-    screen.blit(game_text, (SCREEN_WIDTH // 2 - game_text.get_width() // 2, 50))
+    screen.blit(game_text, (screen_width // 2 - game_text.get_width() // 2, 50))
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
