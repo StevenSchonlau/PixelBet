@@ -12,6 +12,7 @@ ui_dict = {}
 selected_player = None
 initialized = False
 curr_player = None
+current_width, current_height = 0, 0
 
 def refresh_data(ui_manager):
     get_players(ui_manager)
@@ -119,9 +120,10 @@ def draw_leaderboard_button(ui_manager, profile_button):
     )
 
 def draw_leaderboard(ui_manager):
+    global current_width, current_height
     board_panel_rect = pygame.Rect(
-        (SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.2),
-        (SCREEN_WIDTH * 0.9, SCREEN_HEIGHT * 0.7)
+        (current_width * 0.05, current_height * 0.2),
+        (current_width * 0.9, current_height * 0.7)
     )
     board_panel = pygame_gui.elements.UIPanel(
         relative_rect=board_panel_rect,
@@ -149,7 +151,8 @@ def draw_leaderboard(ui_manager):
     refresh_data(ui_manager)
 
 def init_leaderboard_page(ui_manager):
-    global ui_dict, curr_player
+    global ui_dict, curr_player, current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     ui_manager.clear_and_reset()
     profile = get_profile()
     curr_player = User(profile["username"], profile["id"])
@@ -168,7 +171,7 @@ def init_leaderboard_page(ui_manager):
     draw_leaderboard(ui_manager)
 
 def draw_leaderboard_page(screen, events, ui_manager, selected_game):
-    global error, selected_player, initialized
+    global error, selected_player, initialized, current_width, current_height
 
     if selected_player:
         if not initialized:
@@ -205,7 +208,7 @@ def draw_leaderboard_page(screen, events, ui_manager, selected_game):
 
     if error:
         error_name = FONT.render(error, True, WHITE)
-        screen.blit(error_name, ((SCREEN_WIDTH // 8) * 2, (SCREEN_HEIGHT // 8) * 0))
+        screen.blit(error_name, ((current_width // 8) * 2, (current_height // 8) * 0))
 
 
     pygame.display.flip()

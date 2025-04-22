@@ -15,92 +15,95 @@ manual_upgrade_cost = 10
 passive_upgrade_level = 1
 manual_upgrade_level = 1
 max_upgrade_level = 5
+current_width, current_height = 0, 0
 
 def initialize_crypto(ui_manager):
     """Initializes the crypto mining screen."""
     ui_manager.clear_and_reset()
     global back_button, toggle_button, manual_mine_button, earnings_display, status_message, passive_upgrade_button, manual_upgrade_button, passive_upgrade_message, manual_upgrade_message, passive_upgrade_cost_label, manual_upgrade_cost_label, passive_income_rate_label, manual_mine_rate_label
     global net_worth
+    global current_width, current_height
+    current_width, current_height = pygame.display.get_window_size()
     net_worth = fetch_net_worth()
     # Create UI elements for the upgrade chart
     passive_upgrade_message = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 300, 50), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 300, 50), (200, 40)),
         text=f"Passive Income Tier: {passive_upgrade_level}",
         manager=ui_manager,
         object_id="#passive-upgrade-message",
     )
     manual_upgrade_message = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 + 100, 50), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 + 100, 50), (200, 40)),
         text=f"Manual Mining Tier: {manual_upgrade_level}",
         manager=ui_manager,
         object_id="#manual-upgrade-message",
     )
     passive_upgrade_cost_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 300, 100), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 300, 100), (200, 40)),
         text=f"Upgrade Cost: ${passive_upgrade_cost:.2f}",
         manager=ui_manager,
         object_id="#passive-upgrade-cost",
     )
     manual_upgrade_cost_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 + 100, 100), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 + 100, 100), (200, 40)),
         text=f"Upgrade Cost: ${manual_upgrade_cost:.2f}",
         manager=ui_manager,
         object_id="#manual-upgrade-cost",
     )
     passive_upgrade_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 300, 150), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 300, 150), (200, 40)),
         text="Upgrade",
         manager=ui_manager,
         object_id="#passive-upgrade-button",
         visible=True
     )
     manual_upgrade_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 + 100, 150), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 + 100, 150), (200, 40)),
         text="Upgrade",
         manager=ui_manager,
         object_id="#manual-upgrade-button",
         visible=True
     )
     passive_income_rate_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 300, 200), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 300, 200), (200, 40)),
         text=f"Rate: ${passive_income_rate:.2f}/second",
         manager=ui_manager,
         object_id="#passive-income-rate",
     )
     manual_mine_rate_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 + 100, 200), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 + 100, 200), (200, 40)),
         text=f"Rate: ${manual_mine_rate:.2f}/click",
         manager=ui_manager,
         object_id="#manual-mine-rate",
     )
     
     back_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((20, SCREEN_HEIGHT - 60), (100, 40)),
+        relative_rect=pygame.Rect((20, current_height - 60), (100, 40)),
         text="Back",
         manager=ui_manager,
         object_id="#back-button",
     )
     toggle_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 20), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, current_height // 2 - 20), (200, 40)),
         text="Start Mining" if not mining else "Stop Mining",
         manager=ui_manager,
         object_id="#toggle-button",
     )
     manual_mine_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, current_height // 2 + 40), (200, 40)),
         text="Manual Mine",
         manager=ui_manager,
         object_id="#manual-mine-button",
         visible=mining
     )
     earnings_display = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, current_height // 2 + 100), (200, 40)),
         text=f"Earnings: ${net_worth:.2f}",
         manager=ui_manager,
         object_id="#earnings-display",
     )
     status_message = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 150), (200, 40)),
+        relative_rect=pygame.Rect((current_width // 2 - 100, current_height // 2 + 150), (200, 40)),
         text="Mining In Progress" if mining else "Mining Stopped",
         manager=ui_manager,
         object_id="#status-message",

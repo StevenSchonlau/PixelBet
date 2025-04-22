@@ -2,7 +2,7 @@ import pygame
 import pygame_gui
 import os
 from pygame.locals import *
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, THEME_PATH
+from constants import screen_width, screen_height, FPS, BLACK, THEME_PATH
 from home import draw_home_screen, initialize_home
 from game import draw_game_screen, initialize_game
 from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward
@@ -20,10 +20,11 @@ from shirtShop import draw_shirt_shop, initialize_shirt_shop
 from roomShop import draw_room_shop, initialize_room_shop
 from themeShop import draw_theme_shop, initialize_theme_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
+from settings import initialize_settings, draw_settings_screen
 import multipleGames
 
 pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("PixelBet")
 icon_path = os.path.join('frontend\\assets\\images', "pixelbet_logo.jpeg")  # Update path if needed
 if os.path.exists(icon_path):
@@ -32,7 +33,7 @@ if os.path.exists(icon_path):
 else:
     print("Warning: Icon file not found!")
 
-ui_manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), THEME_PATH)
+ui_manager = pygame_gui.UIManager((screen_width, screen_height), THEME_PATH)
 ui_manager.clear_and_reset()
 initialized = "None"
 current_screen = "login"
@@ -44,7 +45,7 @@ pygame.mixer.init()
 button_click_sound = pygame.mixer.Sound("./frontend/assets/effects/buttonClick.wav")
 
 def main():
-    global initialized, current_screen, selected_game, show_achievement_popup ,GLOBAL_ACHIEVEMENTS
+    global initialized, current_screen, selected_game, show_achievement_popup ,GLOBAL_ACHIEVEMENTS, screen
     clock = pygame.time.Clock()
     running = True
     print(GLOBAL_ACHIEVEMENTS)
@@ -56,12 +57,14 @@ def main():
         for event in events:
             if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 button_click_sound.play()
+            if event.type == VIDEORESIZE:
+                screen = pygame.display.set_mode((event.w, event.h))
+                ui_manager.set_window_resolution((event.w, event.h))
+                print("Resized to:", event.w, event.h)
             #print(event)
             if event.type == pygame.QUIT:
                 running = False
             ui_manager.process_events(event)
-
-        screen.fill(BLACK)  # Clear screen
         global music_playing
         
         if get_user() is not None:
@@ -157,6 +160,17 @@ def main():
                         initialize_underDev(ui_manager)
                         initialized = "underDev"
                     selected_game = draw_underDev_screen(screen, events, ui_manager, selected_game)
+
+                    if selected_game == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+
+                elif selected_game == "settings":
+                    if initialized != "settings":
+                        initialize_settings(ui_manager)
+                        initialized = "settings"
+                    selected_game = draw_settings_screen(screen, events, ui_manager, selected_game)
 
                     if selected_game == "home":  # If "Back" is pressed in crypto, return to home
                         selected_game = None

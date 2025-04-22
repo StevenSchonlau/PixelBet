@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
 import requests
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, FONT, SERVER_URL, BLACK
+from constants import screen_width, screen_height, WHITE, FONT, SERVER_URL, BLACK
 from user_session import UserSession
 
 # Global variables to store the popup button and achievement data.
@@ -101,8 +101,8 @@ def initialize_achievement_popup(ui_manager):
     # Build the OK button
     text_surface = FONT.render(current_achievement["title"], True, WHITE)
     width, height = text_surface.get_width() + 40, text_surface.get_height() + 20
-    x = SCREEN_WIDTH//2 - width//2
-    y = SCREEN_HEIGHT*3//4
+    x = screen_width//2 - width//2
+    y = screen_height*3//4
 
     print(f"   Creating button at ({x}, {y}) size ({width}, {height})")
 
@@ -137,20 +137,20 @@ def draw_achievement_popup(screen, events, ui_manager):
 
     screen.fill(BLACK)
     title = FONT.render(current_achievement["title"], True, WHITE)
-    screen.blit(title, ((SCREEN_WIDTH-title.get_width())//2, 200))
+    screen.blit(title, ((screen_width-title.get_width())//2, 200))
 
     icon_image = current_achievement.get("icon_image")
     if icon_image:
-        icon_x = (SCREEN_WIDTH - icon_image.get_width()) // 2
+        icon_x = (screen_width - icon_image.get_width()) // 2
         icon_y = 200 - icon_image.get_height() - 10
         screen.blit(icon_image, (icon_x, icon_y))
 
-    max_width = SCREEN_WIDTH - 100  # leave 50px margin each side
+    max_width = screen_width - 100  # leave 50px margin each side
     wrapped_lines = wrap_text(current_achievement["description"], FONT, max_width)
     y=250
     for line in wrapped_lines:
         rendered = FONT.render(line, True, WHITE)
-        screen.blit(rendered, ((SCREEN_WIDTH - rendered.get_width()) // 2, y))
+        screen.blit(rendered, ((screen_width - rendered.get_width()) // 2, y))
         y += rendered.get_height() + 4
 
 

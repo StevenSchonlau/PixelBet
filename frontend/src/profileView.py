@@ -25,6 +25,8 @@ selected_friend = None
 all_shirts = {}
 all_rooms = {}
 bet_history = []
+current_width = 0
+current_height = 0
 
 def save_profile():
     global username, ui_dict, error, active_avatar_index, active_shirt_index, active_room_index
@@ -70,7 +72,7 @@ def send_progress_email(email):
 def init_profile_view(ui_manager, selected_player=None):
     global avatar, username, active_avatar_index, selected_friend, achievements
     global owns_shirts_list, all_shirts, all_rooms, owns_room_list, active_shirt_index, active_room_index
-    global owns_themes, active_theme_index, bet_history
+    global owns_themes, active_theme_index, bet_history, current_width, current_height
     all_shirts = {
         "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
         "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
@@ -115,8 +117,10 @@ def init_profile_view(ui_manager, selected_player=None):
 
 def init_view_profile_ui(ui_manager):
     global username
-    global ui_dict
+    global ui_dict, current_height, current_width
     ui_manager.clear_and_reset()
+    current_width, current_height = pygame.display.get_window_size()
+
 
     back_button = draw_button("Back", ui_manager, 0, 0)
     if not selected_friend:
@@ -130,18 +134,18 @@ def init_view_profile_ui(ui_manager):
         theme_right = draw_button(">", ui_manager, 7.4, 5.6, "theme_right", size="md")
         save_button = draw_button("save", ui_manager, 6.8, 6.3)
         username_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 8 * 4.8 , SCREEN_HEIGHT // 8 * 6.3), (SCREEN_WIDTH // 4,50)),
+            relative_rect=pygame.Rect((current_width // 8 * 4.8 , current_height // 8 * 6.3), (current_width // 4,50)),
             manager=ui_manager,
             object_id="username"
         )
         username_field.set_text(username)
-        room_label_rect = pygame.Rect((SCREEN_WIDTH // 8 * 2.8, SCREEN_HEIGHT // 8 * 0), (SCREEN_WIDTH // 4,50))
+        room_label_rect = pygame.Rect((current_width // 8 * 2.8, current_height // 8 * 0), (current_width // 4,50))
         room_label = pygame_gui.elements.UILabel(
             relative_rect=room_label_rect,
             text=f"{owns_room_list[active_room_index]}",
             manager=ui_manager,
         )
-        theme_label_rect = pygame.Rect((SCREEN_WIDTH // 8 * 5.6, SCREEN_HEIGHT // 8 * 5.5), (SCREEN_WIDTH // 4,50))
+        theme_label_rect = pygame.Rect((current_width // 8 * 5.6, current_height // 8 * 5.5), (current_width // 4,50))
         theme_label = pygame_gui.elements.UILabel(
             relative_rect=theme_label_rect,
             text=f"{owns_themes[active_theme_index]} theme",
@@ -165,7 +169,7 @@ def init_view_profile_ui(ui_manager):
         }
     else:
         username_field = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((SCREEN_WIDTH // 4 , SCREEN_HEIGHT // 8 * .5), (SCREEN_WIDTH // 2,50)),
+            relative_rect=pygame.Rect((current_width // 4 , current_height // 8 * .5), (current_width // 2,50)),
             text=selected_friend.username,
             manager=ui_manager,
             object_id="#username-label"
@@ -185,7 +189,7 @@ def init_view_profile_ui(ui_manager):
     send_progress_email_btn = draw_button("Send Progress", ui_manager, 2, 7.3, size="sm")
     ui_dict['send_progress_email_btn'] = send_progress_email_btn
     send_email_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 * 4.2 , SCREEN_HEIGHT // 8 * 7), (SCREEN_WIDTH // 2-25,50)),
+        relative_rect=pygame.Rect((current_width // 8 * 4.2 , current_height // 8 * 7), (current_width // 2-25,50)),
         manager=ui_manager,
         object_id="send_email_field",
         placeholder_text="email to send to"
@@ -196,11 +200,12 @@ def init_view_profile_ui(ui_manager):
     ui_dict["achievements_button"] = achievements_button
 
 def show_achievements_panel(ui_manager):
+    global current_width, current_height
     """
     Creates and displays a panel overlay with the user's achievements.
     The panel includes a Close button to remove it.
     """
-    panel_rect = pygame.Rect(200, 100, SCREEN_WIDTH - 400, SCREEN_HEIGHT - 400)
+    panel_rect = pygame.Rect(200, 100, current_width - 400, current_height - 400)
     achievements_panel = pygame_gui.elements.UIPanel(
         relative_rect=panel_rect,
         manager=ui_manager,
@@ -259,16 +264,19 @@ def draw_view_profile_button(ui_manager):
 
 
 def get_center(text):
+    global current_width
     text_surface = FONT.render(text, True, WHITE)
     button_width = text_surface.get_width() + 40
-    button_x = (SCREEN_WIDTH - button_width) // 2
+    button_x = (current_width - button_width) // 2
     return button_x
 
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
     global active_avatar_index, active_shirt_index, error, ui_dict, bet_history, active_avatar_index, all_rooms, owns_room_list, active_room_index
-    global active_theme_index, owns_themes
-    screen.blit(all_rooms[owns_room_list[active_room_index]], (0, 0))
+    global active_theme_index, owns_themes, current_width, current_height
+    bg = all_rooms[ owns_room_list[active_room_index] ]
+    bg = pygame.transform.scale(bg, (current_width, current_height))
+    screen.blit(bg, (0, 0))
 
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -321,19 +329,19 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     
     if error:
         error_name = FONT.render(error, True, WHITE)
-        screen.blit(error_name, ((SCREEN_WIDTH // 8) * 1, (SCREEN_HEIGHT // 8) * 6))
+        screen.blit(error_name, ((current_width // 8) * 1, (current_height // 8) * 6))
 
-    y_offset = SCREEN_HEIGHT // 8 * 6
+    y_offset = screen_height // 8 * 6
 
-    screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((SCREEN_WIDTH // 8) * 2.85,(SCREEN_HEIGHT // 8) * 4))
+    screen.blit(all_shirts[f'{owns_shirts_list[active_shirt_index]}{active_avatar_index}'], ((current_width // 8) * 3.6 - 80,(current_height // 2 + 30)))
 
 
     wins = sum(1 for bet in bet_history if bet.get("outcome") == "win")
     losses = sum(1 for bet in bet_history if bet.get("outcome") == "loss")
     wins_text = FONT.render(f"Wins: {wins}", True, (0, 255, 0))
     losses_text = FONT.render(f"Losses: {losses}", True, (255, 0, 0))
-    wins_pos = (SCREEN_WIDTH - wins_text.get_width() - 10, 10)
-    losses_pos = (SCREEN_WIDTH - losses_text.get_width() - 10, 10 + wins_text.get_height() + 5)
+    wins_pos = (current_width - wins_text.get_width() - 10, 10)
+    losses_pos = (current_width - losses_text.get_width() - 10, 10 + wins_text.get_height() + 5)
     screen.blit(wins_text, wins_pos)
     screen.blit(losses_text, losses_pos)
 

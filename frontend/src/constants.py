@@ -5,8 +5,8 @@ import requests
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+screen_width = 800
+screen_height = 600
 FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -30,6 +30,7 @@ SERVER_URL="http://localhost:5000/"
 
 
 def draw_button(text, ui_manager, x, y, object_id=None, size=None):
+    current_width, current_height = pygame.display.get_window_size()
     if size == "sm":
         obj_id = "#small_button"
         font = SMALL_FONT
@@ -49,8 +50,8 @@ def draw_button(text, ui_manager, x, y, object_id=None, size=None):
     text_surface = font.render(text, True, WHITE)
     button_width = text_surface.get_width() + x_pad
     button_height = text_surface.get_height() + y_pad
-    button_x = (SCREEN_WIDTH // 8) * x
-    button_y = (SCREEN_HEIGHT // 8) * y
+    button_x = (current_width // 8) * x
+    button_y = (current_height // 8) * y
     
     return pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((button_x, button_y), (button_width, button_height)),
@@ -107,7 +108,7 @@ class Sprite(pygame.sprite.Sprite):
         self.frames = load_sprites(sprite_sheet, 8)
         self.index = 0
         self.image = self.frames[self.index]
-        self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 8 * 3))
+        self.rect = self.image.get_rect(center=(screen_width // 2, screen_height // 8 * 3))
         self.animation_speed = 5
         self.frame_counter = 0
     
