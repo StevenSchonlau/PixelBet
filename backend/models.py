@@ -57,6 +57,9 @@ class User(db.Model):
     owns_themes = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=True, default=None)
 
+    has_time_limit = db.Column(db.Boolean, default=False)
+    time_limit = db.Column(NUMERIC(precision=12, scale=0), nullable=False, default=0)
+    total_time_day = db.Column(NUMERIC(precision=12, scale=0), nullable=False, default=0)
 
     sent_requests = db.relationship(
         'FriendAssociation',

@@ -5,7 +5,7 @@ from pygame.locals import *
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, THEME_PATH
 from home import draw_home_screen, initialize_home
 from game import draw_game_screen, initialize_game
-from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward
+from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward, clear_user
 from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
 from confirmEmail import initialize_confirming, draw_confirming_screen
 from passwordReset import initialize_password_reset, draw_password_reset_screen
@@ -21,6 +21,7 @@ from roomShop import draw_room_shop, initialize_room_shop
 from themeShop import draw_theme_shop, initialize_theme_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
 from notifications import initialize_notification, draw_notification
+from timeLimits import initialize_time_limit, draw_time_limit, process_time_limit, init_time_limit, initialize_time_limit_reached, draw_time_limit_reached, reset_time
 import multipleGames
 
 pygame.init()
@@ -66,15 +67,25 @@ def main():
         global music_playing
         
         if get_user() is not None:
+            if initialized == "login":
+                init_time_limit()
             if not music_playing:
                 play_music()
                 music_playing = True
             if get_login_reward():
                 #show login_reward
                 if initialized != "dailyLogin":
+                    reset_time()
                     initialize_popup(ui_manager)
                     initialized = "dailyLogin"
                 draw_popup(screen, events, ui_manager)
+            elif process_time_limit(time_delta) == "time limit reached":
+                #draw time up screen
+                if initialized != "time limit reached":
+                    initialize_time_limit_reached(ui_manager)
+                    initialized = "time limit reached"
+                if draw_time_limit_reached(screen, events, ui_manager) == "signout":
+                    clear_user()
             elif get_ach_popup():
                 if initialized != "achievement":
                     print("initializing achievement popup")
@@ -98,6 +109,11 @@ def main():
                         initialize_notification(ui_manager)
                         initialized = "notifications"
                     selected_game = draw_notification(screen, events, ui_manager)
+                elif selected_game == "time limit":
+                    if initialized != "time limit":
+                        initialize_time_limit(ui_manager)
+                        initialized = "time limit"
+                    selected_game = draw_time_limit(screen, events, ui_manager)
                 elif selected_game == "Friends":
                     if initialized != "friends":
                         init_friends_page(ui_manager)

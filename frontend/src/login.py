@@ -7,6 +7,7 @@ from constants import *
 import pygame
 import pygame_gui
 from user_session import UserSession
+from timeLimits import end_time_limit
 
 BASE_URL = SERVER_URL #where server is running
 
@@ -24,6 +25,7 @@ def get_user():
 #failed login
 error_message = ""
 def clear_user():
+    end_time_limit()
     global user
     user = None
     global error_message

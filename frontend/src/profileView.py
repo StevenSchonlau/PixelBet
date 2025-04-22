@@ -161,6 +161,8 @@ def init_view_profile_ui(ui_manager):
 
     notification_settings = draw_button("Notifications", ui_manager, 2, 7, size="sm")
     ui_dict['Notifications'] = notification_settings
+    time_limit_settings = draw_button("Time Limit", ui_manager, 2, 6.7, size="sm")
+    ui_dict['Time Limit'] = time_limit_settings
     ui_dict["back"] = back_button
 
     #TODO - add send progress email button and text field
@@ -279,6 +281,8 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 save_profile()
             elif text == "Notifications":
                 selected_game = "notifications"
+            elif text == "Time Limit":
+                selected_game = "time limit"
             elif text == "Send Progress":
                 send_progress_email(ui_dict["send_email_field"].get_text())
             elif text == "Achievements":

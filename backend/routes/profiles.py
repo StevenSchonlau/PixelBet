@@ -301,3 +301,81 @@ def send_bet_email():
         return jsonify({'message': "success"})
     except Exception as e:
         return jsonify({'message': 'Failed to send email', 'error': str(e)}), 500
+
+
+
+@profiles_bp.route('/set-user-has-time-limit', methods=['POST'])
+def set_user_has_time_limit():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.has_time_limit = data['preference']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-has-time-limit', methods=['GET'])
+def get_user_has_time_limit():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'preference': user.has_time_limit})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get preference', 'error': str(e)}), 500
+    
+@profiles_bp.route('/set-user-time-limit', methods=['POST'])
+def set_user_time_limit():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.time_limit = data['time limit']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update time limit', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-time-limit', methods=['GET'])
+def get_user_time_limit():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'time limit': user.time_limit})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get time limit', 'error': str(e)}), 500
+    
+
+@profiles_bp.route('/set-user-total-time-day', methods=['POST'])
+def set_user_total_time_day():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.total_time_day = data['total time']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Preference updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update time limit', 'error': str(e)}), 500
+    
+@profiles_bp.route('/get-user-total-time-day', methods=['GET'])
+def get_user_total_time_day():
+    data = request.json
+    user = User.query.filter_by(id=str(data['id'])).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    try:
+        return jsonify({'total time': user.total_time_day})
+    except Exception as e:
+        return jsonify({'message': 'Failed to get time limit', 'error': str(e)}), 500
