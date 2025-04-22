@@ -47,6 +47,8 @@ def getProfile(user_id):
             "owns_room_list": user.owns_room_list,
             "active_theme": user.active_theme,
             "owns_themes": user.owns_themes,
+            "resolution_width":  user.resolution_width,
+            "resolution_height": user.resolution_height,
         })
     return jsonify({'message': 'User doesn\'t exist'}), 401
 
@@ -69,6 +71,13 @@ def updateProfile(user_id):
         user.active_room = int(data['active_room'])
     if 'active_theme' in data:
         user.active_theme = int(data['active_theme'])
+    if 'resolution' in data:
+        try:
+            w, h = map(int, data['resolution'].split('x'))
+            user.resolution_width  = w
+            user.resolution_height = h
+        except ValueError:
+            return jsonify({'message': "Invalid resolution format, expected 'WIDTHxHEIGHT'"}), 400
 
     try:
         db.session.commit()

@@ -20,7 +20,7 @@ from shirtShop import draw_shirt_shop, initialize_shirt_shop
 from roomShop import draw_room_shop, initialize_room_shop
 from themeShop import draw_theme_shop, initialize_theme_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
-from settings import initialize_settings, draw_settings_screen
+from settings import initialize_settings, draw_settings_screen, is_resolution_set, fetch_user_resolution, set_resolution_marker
 import multipleGames
 
 pygame.init()
@@ -71,6 +71,13 @@ def main():
             if not music_playing:
                 play_music()
                 music_playing = True
+            if not is_resolution_set():
+                set_resolution_marker(True)
+                res = fetch_user_resolution()
+                width, height = map(int, res.split('x'))
+                new_resolution = (width, height)
+                pygame.display.set_mode(new_resolution)
+                ui_manager.set_window_resolution((width, height))
             if get_login_reward():
                 #show login_reward
                 if initialized != "dailyLogin":

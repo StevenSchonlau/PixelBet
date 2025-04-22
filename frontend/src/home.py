@@ -7,6 +7,7 @@ from profileView import draw_view_profile_button
 from leaderboard import draw_leaderboard_button
 from login import clear_user
 from profileView import get_user_notification_preferences
+from settings import set_resolution_marker
 
 import multipleGames
 
@@ -243,6 +244,7 @@ def draw_home_screen(screen, events, ui_manager):
             elif "Signout" in event.ui_element.text:
                 clear_user()
                 pygame.display.set_mode((800,600))
+                set_resolution_marker(False)
             elif "Settings" in event.ui_element.text:
                 print("Settings button clicked")
                 selected_game = "settings"

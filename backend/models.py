@@ -52,6 +52,8 @@ class User(db.Model):
     active_theme = db.Column(db.Integer, default=0)
     owns_themes = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
     achievements = db.Column(db.PickleType, nullable=True, default=None)
+    resolution_width  = db.Column(db.Integer, nullable=False, default=800)
+    resolution_height = db.Column(db.Integer, nullable=False, default=600)
 
 
     sent_requests = db.relationship(
