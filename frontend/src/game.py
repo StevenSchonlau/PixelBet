@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 import datetime
 import random
+import math
 from constants import *
 from login import get_user  # Replace 'login' with the actual module name
 from achievements import check_achievements, set_ach_popup, get_ach_popup
@@ -526,7 +527,7 @@ def initialize_game(ui_manager):
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
-    global rumor_button, insider_button, sound_toggle_button, current_width, current_height
+    global rumor_button, insider_button, sound_toggle_button, current_width, current_height, insight_toggle_button
     current_width, current_height = pygame.display.get_window_size()
     global result_notifications
     result_notifications = get_user_notification_preferences_results()
@@ -622,19 +623,34 @@ def initialize_game(ui_manager):
         object_id="toggle-button"
     )
 
-    insider_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((current_width - 200, current_height - 40, 200, 40)),  # Positioned close to the bottom-right
-        text="Insider $50",
-        manager=ui_manager,
-        object_id="insider-button"
-    )
+    insider_cost = max(math.floor((net_worth * 0.6) / 5) * 5, 60)  #dynamic, or 60
 
+    insider_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width - 360, current_height - 40, 200, 40)),  # Positioned close to the bottom-right
+        text=f"Insider ${insider_cost}",
+        manager=ui_manager,
+        object_id="insider-button",
+        visible = False
+    )
+    insider_button.hide()
+
+
+    rumor_cost = max(math.floor((net_worth * 0.3) / 5) * 5, 30)  #dynamic, or 30
 
     rumor_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((current_width - 410, current_height - 40, 200, 40)),  # Positioned next to Insider Message
-        text="Rumor $20",
+        relative_rect=pygame.Rect((current_width - 570, current_height - 40, 200, 40)),  # Positioned next to Insider Message
+        text=f"Rumor ${rumor_cost}",
         manager=ui_manager,
-        object_id="rumor-button"
+        object_id="rumor-button",
+        visible = False
+    )
+    rumor_button.hide()
+
+    insight_toggle_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width - 150, current_height - 40, 150, 40)),  # Positioned where insider_button was
+        text="Insights",
+        manager=ui_manager,
+        object_id="insight-toggle-button",
     )
 
 
@@ -888,6 +904,19 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 print("Returning to home screen")
                 update_net_worth(net_worth)
                 return None  # Go back to home
+            
+            if event.ui_element == insight_toggle_button:
+                if insight_toggle_button.text == "Insights":
+                # Show insider and rumor buttons, update text
+                    insider_button.show()
+                    rumor_button.show()
+                    insight_toggle_button.set_text("Close")
+                else:
+                # Hide insider and rumor buttons, revert text
+                    insider_button.hide()
+                    rumor_button.hide()
+                    insight_toggle_button.set_text("Insights")
+
             
             if event.ui_element == history_toggle_button:
                 showing_history = not showing_history
