@@ -526,7 +526,7 @@ def initialize_game(ui_manager):
     global message_label, race_timer_label, race_start_time, horses
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
-    global set_limit_button, remove_limit_button, limit_entry
+    global set_limit_button, remove_limit_button, limit_entry, limit_toggle_button
     global rumor_button, insider_button, sound_toggle_button, current_width, current_height, insight_toggle_button
     current_width, current_height = pygame.display.get_window_size()
     global result_notifications
@@ -599,6 +599,7 @@ def initialize_game(ui_manager):
         manager=ui_manager,
         object_id="set-limit-button"
     )
+    set_limit_button.hide()
 
     remove_limit_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((current_width - 120, current_height - 280, 100, 30)),  
@@ -606,6 +607,7 @@ def initialize_game(ui_manager):
         manager=ui_manager,
         object_id="remove-limit-button"
     )
+    remove_limit_button.hide()
 
 
     limit_entry = pygame_gui.elements.UITextEntryLine(
@@ -613,7 +615,14 @@ def initialize_game(ui_manager):
         manager=ui_manager,
         object_id="limit-entry"
     )
+    limit_entry.hide()
 
+    limit_toggle_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width - 170, current_height - 240, 150, 30)),  
+        text="Set Limit",
+        manager=ui_manager,
+        object_id="limit-toggle-button",
+    )
 
 
     history_toggle_button = pygame_gui.elements.UIButton(
@@ -671,7 +680,7 @@ def handle_sound_toggle():
 
 def handle_rumor_button():
     global net_worth  
-    rumor_cost = 20  # Cost of purchasing a rumor
+    rumor_cost = max(math.floor((net_worth * 0.3) / 5) * 5, 30)  #dynamic, or 30
 
     if net_worth >= rumor_cost:
         net_worth -= rumor_cost  # Deduct the cost from net_worth
@@ -694,7 +703,7 @@ def handle_rumor_button():
     
 def handle_insider_button():
     global net_worth
-    insider_cost = 50  # Cost of purchasing insider information
+    insider_cost = max(math.floor((net_worth * 0.6) / 5) * 5, 60)  #dynamic, or 60
 
     if net_worth >= insider_cost:
         net_worth -= insider_cost  # Deduct the cost from net_worth
@@ -904,6 +913,18 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 print("Returning to home screen")
                 update_net_worth(net_worth)
                 return None  # Go back to home
+            
+            if event.ui_element == limit_toggle_button:
+                if limit_toggle_button.text == "Close":
+                    limit_entry.hide()
+                    set_limit_button.hide()
+                    remove_limit_button.hide()
+                    limit_toggle_button.set_text("Set Limit")
+                else:
+                    limit_entry.show()
+                    set_limit_button.show()
+                    remove_limit_button.show()
+                    limit_toggle_button.set_text("Close")
             
             if event.ui_element == insight_toggle_button:
                 if insight_toggle_button.text == "Insights":
