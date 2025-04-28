@@ -8,6 +8,12 @@ from achievements import check_achievements, set_ach_popup, get_ach_popup
 from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
 BASE_URL = SERVER_URL
 USER_ID = get_user()
+SPONSOR_TIERS = {
+    "Bronze": {"cost": 100, "boost": 0.05},
+    "Silver": {"cost": 300, "boost": 0.10},
+    "Gold": {"cost": 500, "boost": 0.20},
+}
+TIER_ORDER = {"Bronze": 1, "Silver": 2, "Gold": 3}
 
 # Global variables
 back_button = None
@@ -41,6 +47,16 @@ money_sound = pygame.mixer.Sound("./frontend/assets/effects/money.wav")
 play_sound_effects = True
 result_notifications = False
 current_width, current_height = 0, 0
+sponsor_panel = None
+sponsor_close_button = None
+sponsor_boost = None
+sponsor_buttons = {}
+sponsor_selection = {}
+chance_labels = {}
+owned_tiers = {}
+DEFAULT_BG   = pygame.Color('#CCCCCC')
+OWNED_BG  = pygame.Color('#88FF88')
+SELECTED_BG   = pygame.Color('#00AA00')
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
@@ -80,6 +96,174 @@ def send_bet_email(win, amount, wh, lh=""):
     except Exception as e:
         print(f"❌ Error sending email: {str(e)}")
         return 0
+
+def load_sponsorships():
+    """GET /sponsorship/get-sponsorships"""
+    resp = requests.get(
+        f"{SERVER_URL}/sponsorship/get-sponsorships",
+        json={ 'id': USER_ID }
+    )
+    data = resp.json()
+    if resp.status_code == 200 and data['message']=='success':
+        return data['sponsorships'], data['net_worth']
+    # fallback
+    return {}, globals().get('net_worth', 0.0)
+
+def buy_sponsorship(horse, tier):
+    """POST /sponsorship/buy-sponsorship"""
+    resp = requests.post(
+        f"{SERVER_URL}/sponsorship/buy-sponsorship",
+        json={ 'id': USER_ID, 'horse_name': horse, 'tier': tier }
+    )
+    return resp.status_code, resp.json()
+
+def compute_probabilities():
+    global sponsor_boost, horses
+    # returns {horse_name: probability_float}
+    weights = {}
+    for h in horses:
+        base_w = 1.0 / h["odds"]
+        boost = sponsor_boost.get(h["name"], 0.0)
+        weights[h["name"]] = base_w + boost
+    total = sum(weights.values())
+    return {name: w / total for name, w in weights.items()}
+
+def show_sponsor_panel(ui_manager):
+    global current_width, current_height, sponsor_panel, sponsor_close_button, sponsor_buttons, sponsor_selection, owned_tiers, chance_labels
+    panel_rect = pygame.Rect((current_width // 2) - (current_width - 100) // 2, 100, current_width - 100, current_height - 200)
+    panel_width = panel_rect.width
+
+    if sponsor_panel is not None:
+        sponsor_panel.kill()
+        sponsor_panel = None
+        sponsor_buttons.clear()
+        chance_labels.clear()
+
+    existing_data, nw = load_sponsorships()
+
+    owned_tiers       = {}
+    sponsor_selection = {}
+    sponsor_boost     = {}
+
+    for h in horses:
+        name = h["name"]
+        info = existing_data.get(name, {})
+        owned_list = info.get("owned", [])
+        active_tier = info.get("active")    # might be None
+
+        owned_tiers[name]       = owned_list
+        sponsor_selection[name] = active_tier
+        sponsor_boost[name]     = (SPONSOR_TIERS[active_tier]["boost"]
+                                   if active_tier in SPONSOR_TIERS else 0.0)
+
+    sponsor_panel = pygame_gui.elements.UIPanel(
+        relative_rect=panel_rect,
+        manager=ui_manager,
+        object_id="#sponsor_panel"
+    )
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((panel_width // 2 - 100, 10), (200, 30)),
+        text="Sponsor a Team (permanent boost)",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    probs = compute_probabilities()
+    x_offset = 0
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((x_offset, 50), (panel_width // 11 * 3, 50)),
+        text="Horse Name",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    x_offset += panel_width // 11 * 3
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((x_offset, 50), (panel_width // 11 * 2, 50)),
+        text="Chance to Win",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    x_offset += panel_width // 11 * 2
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((x_offset, 50), (panel_width // 11 * 2, 50)),
+        text="Bronze ($100)",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    x_offset += panel_width // 11 * 2
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((x_offset, 50), (panel_width // 11 * 2, 50)),
+        text="Silver ($300)",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    x_offset += panel_width // 11 * 2
+    pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((x_offset, 50), (panel_width // 11 * 2, 50)),
+        text="Gold ($500)",
+        manager=ui_manager,
+        container=sponsor_panel
+    )
+    probs = compute_probabilities()
+    y_offset = 100
+    for h in horses:
+        name = h["name"]
+        x_offset = 0
+        pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((x_offset, y_offset), (panel_width // 11 * 3, 50)),
+            text=name,
+            manager=ui_manager,
+            container=sponsor_panel
+        )
+        x_offset += panel_width // 11 * 3
+        pct = int(probs[name]*100)
+        chance_lbl = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((x_offset, y_offset), (panel_width // 11 * 2, 50)),
+            text=f"{pct}%",
+            manager=ui_manager,
+            container=sponsor_panel
+        )
+        chance_labels[name] = chance_lbl
+        x_offset += panel_width // 11 * 2
+        pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((x_offset, y_offset), (panel_width // 11 * 2, 50)),
+            text="Select",
+            manager=ui_manager,
+            container=sponsor_panel
+        )
+        col_w = panel_width // 11 * 2
+        row_h = 50
+        for tier_key in ["Bronze", "Silver", "Gold"]:
+            btn = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect((x_offset, y_offset), (col_w, row_h)),
+                text=tier_key,
+                manager=ui_manager,
+                container=sponsor_panel
+            )
+            if tier_key not in owned_tiers[name]:
+                btn.colours['normal_bg'] = DEFAULT_BG
+            elif sponsor_selection[name] == tier_key:
+                # owned & active → green
+                btn.colours['normal_bg'] = SELECTED_BG
+            else:
+                # owned but inactive → light gray
+                btn.colours['normal_bg'] = OWNED_BG
+            btn.rebuild()
+
+            # remember what this button is
+            sponsor_buttons[btn] = (name, tier_key)
+            x_offset += col_w
+        y_offset += 50
+
+    # Add a close button on the panel
+    sponsor_close_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((panel_rect.width - 110, 10), (100, 30)),
+        text="Close",
+        manager=ui_manager,
+        container=sponsor_panel,
+        object_id="#close_sponsors"
+    )
+    
+    return sponsor_panel
 
 
 def draw_game_background(surface):
@@ -526,6 +710,7 @@ def initialize_game(ui_manager):
     global horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, USER_ID
     global net_worth, bet_history, user
     global set_limit_button, remove_limit_button, limit_entry
+    global sponsor_button, sponsor_boost
     global rumor_button, insider_button, sound_toggle_button, current_width, current_height
     current_width, current_height = pygame.display.get_window_size()
     global result_notifications
@@ -545,11 +730,26 @@ def initialize_game(ui_manager):
     ]
 
     horse_bets = {horse["name"]: 0 for horse in horses}
-
     horse_names = [horse["name"] for horse in horses]
     pending_bets = {horse["name"]: 0 for horse in horses}
-    horse_weights = [1 / horse["odds"] for horse in horses]  # Lower odds → higher chance of winning
-    winning_horse = random.choices(horse_names, weights=horse_weights, k=1)[0]
+
+    existing_data, net_worth = load_sponsorships()
+    sponsor_boost = {}
+    for h in horses:
+        info = existing_data.get(h["name"], {})        # info is { "owned":[…], "active":tier_str }
+        tier = info.get("active")                      # tier_str or None
+        if tier and tier in SPONSOR_TIERS:
+            sponsor_boost[h["name"]] = SPONSOR_TIERS[tier]["boost"]
+        else:
+            sponsor_boost[h["name"]] = 0.0
+
+    weights = []
+    for h in horses:
+        base_w = 1.0 / h["odds"]
+        bonus  = sponsor_boost[h["name"]]
+        weights.append(base_w + bonus)
+
+    winning_horse = random.choices(horse_names, weights=weights, k=1)[0]
     print(f"🏆 Predetermined Winner: {winning_horse}")
 
     # Reset horse positions
@@ -631,13 +831,18 @@ def initialize_game(ui_manager):
 
 
     rumor_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((current_width - 410, current_height - 40, 200, 40)),  # Positioned next to Insider Message
+        relative_rect=pygame.Rect((current_width - 400, current_height - 40, 200, 40)),  # Positioned next to Insider Message
         text="Rumor $20",
         manager=ui_manager,
         object_id="rumor-button"
     )
 
-
+    sponsor_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width - 600, current_height - 40, 200, 40)),
+        text="Sponsor Teams",
+        manager=ui_manager,
+        object_id="#sponsor-button"
+    )
 
     draw_betting_table(ui_manager)
     # Start the race timer
@@ -727,7 +932,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
     global bet_history, race_start_time, bets_placed, message_label, winner_announced, net_worth
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, current_date_filter, current_sort_order
-    global current_width, current_height
+    global current_width, current_height, sponsor_button, sponsor_panel, sponsor_close_button
     draw_game_background(screen)
 
     # Show game and balance info
@@ -802,16 +1007,19 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     # Draw race box
     pygame.draw.rect(screen, WHITE, (50, 100, current_width - 100, 150), 2)  # White border
     y_offset = 120
-
+    probs = compute_probabilities()
+    max_p = max(probs.values()) or 1.0
+    min_speed, max_speed = 1.0, 6.0  # tune these to taste
     # Handle race animation inside the box
     for horse in horses:
+        
         horse_name = horse["name"]
-        horse_odds = horse["odds"]
+        p = probs[horse_name]
         if racing_phase:
             if horse_name == winning_horse:
                 speed = random.randint(1, 10) / 2  # Fastest movement for winner
             else:
-                speed = random.randint(1, 10 - int(horse_odds)) / 2 # Higher odds → slower movement
+                speed = random.randint(1, 10 - int(1/p)*.5) / 2 # Higher odds → slower movement
 
             horse_positions[horse_name] += speed
             if horse_positions[horse_name] >= current_width - 150:
@@ -883,7 +1091,81 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
             if event.ui_element == remove_limit_button:
                 handle_remove_limit_button()  # Call the remove limit function
+            
+            if event.ui_element == sponsor_button:
+                show_sponsor_panel(ui_manager)
+            elif sponsor_panel is not None and event.ui_element == sponsor_close_button:
+                sponsor_panel.kill()
+                sponsor_panel = None
+                sponsor_close_button = None
+            if event.ui_element in sponsor_buttons:
+                horse, tier = sponsor_buttons[event.ui_element]
+                owned = owned_tiers[horse]
+                active = sponsor_selection[horse]
+                # ── 1) Buying a brand‐new tier ───────────────────────────────
+                if tier not in owned:
+                    status, data = buy_sponsorship(horse, tier)
+                    if status == 200 and data['message'] == 'success':
+                        # record ownership + auto‐activate
+                        owned.append(tier)
+                        sponsor_selection[horse] = tier
+                        sponsor_boost[horse]     = SPONSOR_TIERS[tier]['boost']
+                        net_worth                = data['net_worth']
+                        message_label.set_text(
+                            f"Purchased {tier} for {horse}! New balance: ${net_worth:.2f}"
+                        )
+                    elif status == 402 and data['message']=='insufficient_funds':
+                        message_label.set_text("Insufficient funds to purchase sponsorship!")
+                    else:
+                        message_label.set_text("Error purchasing sponsorship.")
 
+                # ── 2) Activating an already‐owned tier ──────────────────────
+                else:
+                    active = sponsor_selection[horse]
+                    #  ─── Deactivate if already active ───────────────────────
+                    if active == tier:
+                        resp = requests.post(
+                            f"{SERVER_URL}/sponsorship/deactivate-sponsorship",
+                            json={'id': USER_ID, 'horse_name': horse}
+                        )
+                        if resp.status_code == 200 and resp.json().get('message')=='deactivated':
+                            sponsor_selection[horse] = None
+                            sponsor_boost[horse]     = 0.0
+                            print(f"Deactivated sponsorship for {horse} ({tier})")
+                        else:
+                            message_label.set_text("Error deactivating sponsorship.")
+                    #  ─── Activate if it wasn’t active ──────────────────────
+                    else:
+                        resp = requests.post(
+                            f"{SERVER_URL}/sponsorship/activate-sponsorship",
+                            json={'id': USER_ID, 'horse_name': horse, 'tier': tier}
+                        )
+                        if resp.status_code == 200 and resp.json().get('message')=='activated':
+                            sponsor_selection[horse] = tier
+                            sponsor_boost[horse]     = SPONSOR_TIERS[tier]['boost']
+                            print(f"Activated sponsorship for {horse} ({tier})")
+                        else:
+                            message_label.set_text("Error activating sponsorship.")
+
+                # ── 3) Recolor this horse’s row ──────────────────────────────
+                for btn, (h2, t2) in sponsor_buttons.items():
+                    if h2 == horse:
+                        if t2 not in owned:
+                            # un‐owned → maybe dim/disable
+                            btn.colours['normal_bg'] = DEFAULT_BG
+                        elif sponsor_selection[horse] == t2:
+                            # owned & active
+                            btn.colours['normal_bg'] = SELECTED_BG
+                        else:
+                            # owned but inactive
+                            btn.colours['normal_bg'] = OWNED_BG
+                        btn.rebuild()
+
+                # ── 4) Update all chance labels ──────────────────────────────
+                probs = compute_probabilities()
+                for hn, lbl in chance_labels.items():
+                    lbl.set_text(f"{int(probs[hn] * 100)}%")
+            
             if event.ui_element == back_button:
                 print("Returning to home screen")
                 update_net_worth(net_worth)
