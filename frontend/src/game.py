@@ -1044,7 +1044,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
             if horse_name == winning_horse:
                 speed = random.randint(1, 10) / 2  # Fastest movement for winner
             else:
-                speed = random.randint(1, 10 - int(1/p)*.5) / 2 # Higher odds → slower movement
+                speed = random.randint(1, 10 - int(1/p *.5)) / 2 # Higher odds → slower movement
 
             horse_positions[horse_name] += speed
             if horse_positions[horse_name] >= current_width - 150:
