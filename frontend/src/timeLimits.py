@@ -78,10 +78,8 @@ def process_time_limit(time_delta):
     global total_day_time, time_limit, has_time_limit
     if has_time_limit and total_day_time + time_delta > time_limit *60:
         #time is up
-        print(f"TIME LIMIT REACHED of {total_day_time} seconds {time_limit} minutes and {has_time_limit} for has time limit value")
         return "time limit reached"
     else:
-        print(f"TIME LIMIT not REACHED of {total_day_time} seconds {time_limit} minutes and {has_time_limit} for has time limit value")
         total_day_time += time_delta
         return "time limit not reached"
 

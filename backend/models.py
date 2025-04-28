@@ -26,6 +26,22 @@ class BetHistory(db.Model):
     amount = db.Column(db.Float, nullable=False)
     outcome = db.Column(Enum('win', 'loss', 'undecided', name='bet_outcome'),
                         nullable=False, default='undecided')
+    
+
+class Sponsorship(db.Model):
+    __tablename__ = 'sponsorships'
+    id         = db.Column(db.Integer,   primary_key=True)
+    user_id = db.Column(CHAR(36), db.ForeignKey('user.id'), nullable=False)
+    horse_name = db.Column(db.String(80), nullable=False)
+    tier       = db.Column(db.String(20), nullable=False)   # "Bronze", "Silver", "Gold"
+    boost      = db.Column(db.Float,     nullable=False)    # 0.05, 0.10, 0.20
+    cost       = db.Column(db.Integer,   nullable=False)
+    created_at = db.Column(db.DateTime,  default=datetime.utcnow)
+    active     = db.Column(db.Boolean,  default=False, nullable=False)
+    __table_args__ = (
+        # allow one row per user/horse/tier
+        db.UniqueConstraint('user_id', 'horse_name', 'tier', name='uq_user_horse_tier'),
+    )
 
 
 
@@ -79,6 +95,7 @@ class User(db.Model):
     )
 
     bet_history = db.relationship('BetHistory', backref='user', lazy=True)
+    sponsorships = db.relationship('Sponsorship', backref='user')
 
     @property
     def friends(self):
