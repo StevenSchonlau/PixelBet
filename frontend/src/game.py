@@ -7,6 +7,7 @@ from constants import *
 from login import get_user  # Replace 'login' with the actual module name
 from achievements import check_achievements, set_ach_popup, get_ach_popup
 from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
+from settings import is_winning_sound_enabled, is_losing_sound_enabled, is_money_sound_enabled
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 SPONSOR_TIERS = {
@@ -43,8 +44,11 @@ user = None
 betting_limit = None
 pygame.mixer.init()
 winning_sound = pygame.mixer.Sound("./frontend/assets/effects/winning.wav")
+winning_sound.set_volume(0.2)
 losing_sound = pygame.mixer.Sound("./frontend/assets/effects/losing.wav")
+losing_sound.set_volume(0.2)
 money_sound = pygame.mixer.Sound("./frontend/assets/effects/money.wav")
+money_sound.set_volume(0.2)
 play_sound_effects = True
 result_notifications = False
 current_width, current_height = 0, 0
@@ -997,14 +1001,14 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 net_worth += winnings
                 print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
-                if (play_sound_effects):
+                if (play_sound_effects) and (is_winning_sound_enabled()):
                     winning_sound.play()
             else:
                 bet["outcome"] = "loss"
                 message_label.set_text(f"Lost ${bet['amount']}. Better luck next time!")
                 if result_notifications:
                     send_bet_email(False, bet["amount"], winning_horse, bet["horse"])
-                if (play_sound_effects):
+                if (play_sound_effects) and (is_losing_sound_enabled()):
                     losing_sound.play()
 
         # Set flag to prevent rerunning
@@ -1254,7 +1258,7 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                     else:
                         bet_amount = pending_bets[horse_name]
                         message_label.set_text(place_bet(horse_name, bet_amount, horse_odds))
-                        if (play_sound_effects):
+                        if (play_sound_effects) and (is_money_sound_enabled()):
                             money_sound.play()
 
             

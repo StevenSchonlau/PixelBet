@@ -9,6 +9,56 @@ resolution_set = False
 AVAILABLE_RESOLUTIONS = ["800x600", "1024x768", "1280x720", "1920x1080"]
 BASEURL = SERVER_URL
 
+button_sound_enabled = True
+button_sound_button = None
+winning_sound_enabled = True
+winning_sound_button = None
+losing_sound_enabled = True
+losing_sound_button = None
+money_sound_enabled = True
+money_sound_button = None
+
+def is_money_sound_enabled():
+    return money_sound_enabled
+def toggle_money_sound():   
+    global money_sound_enabled, money_sound_button
+    money_sound_enabled = not money_sound_enabled
+    if money_sound_enabled: # if current state is enabled, be able to turn it off
+        money_sound_button.set_text("Turn off money sound")
+    else:
+        money_sound_button.set_text("Turn on money sound")
+
+def is_losing_sound_enabled():
+    return losing_sound_enabled 
+def toggle_losing_sound():
+    global losing_sound_enabled, losing_sound_button
+    losing_sound_enabled = not losing_sound_enabled
+    if losing_sound_enabled: # if current state is enabled, be able to turn it off
+        losing_sound_button.set_text("Turn off losing sound")
+    else:
+        losing_sound_button.set_text("Turn on losing sound")
+
+def is_winning_sound_enabled():
+    return winning_sound_enabled
+def toggle_winning_sound():
+    global winning_sound_enabled, winning_sound_button
+    winning_sound_enabled = not winning_sound_enabled
+    if winning_sound_enabled: # if current state is enabled, be able to turn it off
+        winning_sound_button.set_text("Turn off winning sound")
+    else:
+        winning_sound_button.set_text("Turn on winning sound")
+
+def is_button_sound_enabled():
+    return button_sound_enabled
+def toggle_button_sound():
+    global button_sound_enabled, button_sound_button
+    button_sound_enabled = not button_sound_enabled
+    if button_sound_enabled: # if current state is enabled, be able to turn it off
+        button_sound_button.set_text("Turn off button sound")
+    else:
+        button_sound_button.set_text("Turn on button sound")
+
+
 def is_resolution_set():
     return resolution_set
 
@@ -40,7 +90,7 @@ def update_user_resolution(new_res):
 
                               
 def initialize_settings(ui_manager):
-    global back_button, resolution_dropdown
+    global back_button, resolution_dropdown, button_sound_button, winning_sound_button, losing_sound_button, money_sound_button
     # Clear old UI elements
     ui_manager.clear_and_reset()
     starting = fetch_user_resolution()
@@ -69,9 +119,37 @@ def initialize_settings(ui_manager):
         object_id="#resolution_dropdown"
     )
 
+    button_sound_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width // 2 - 200, current_height // 2 + 50, 400, 40)),
+        text="Turn off button sound" if button_sound_enabled else "Turn on button sound",
+        manager=ui_manager,
+        object_id="#button_sound_button"
+    )
+
+    winning_sound_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width // 2 - 200, current_height // 2 + 100, 400, 40)),
+        text="Turn off winning sound" if winning_sound_enabled else "Turn on winning sound",
+        manager=ui_manager,
+        object_id="#winning_sound_button"
+    )
+
+    losing_sound_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width // 2 - 200, current_height // 2 + 150, 400, 40)),
+        text="Turn off losing sound" if button_sound_enabled else "Turn on losing sound",
+        manager=ui_manager,
+        object_id="#losing_sound_button"
+    )
+
+    money_sound_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((current_width // 2 - 200, current_height // 2 + 200, 400, 40)),
+        text="Turn off money sound" if money_sound_enabled else "Turn on money sound",
+        manager=ui_manager,
+        object_id="#money_sound_button"
+    )
+
 
 def draw_settings_screen(screen, events, ui_manager, selected_game):
-    global back_button, resolution_dropdown
+    global back_button, resolution_dropdown, button_sound_button, winning_sound_button
     current_width, current_height = pygame.display.get_window_size()
     
     draw_background(screen)
@@ -85,6 +163,14 @@ def draw_settings_screen(screen, events, ui_manager, selected_game):
             if event.ui_element == back_button:
                 print("Returning to home screen")
                 return None  # Go back to home
+            if event.ui_element == button_sound_button:
+                toggle_button_sound()
+            if event.ui_element == winning_sound_button:
+                toggle_winning_sound()
+            if event.ui_element == losing_sound_button:
+                toggle_losing_sound()
+            if event.ui_element == money_sound_button:
+                toggle_money_sound()
         elif event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
             if event.ui_element == resolution_dropdown:
                 # User selected a new resolution
