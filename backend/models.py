@@ -43,6 +43,16 @@ class Sponsorship(db.Model):
         db.UniqueConstraint('user_id', 'horse_name', 'tier', name='uq_user_horse_tier'),
     )
 
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    id          = db.Column(db.Integer,   primary_key=True)
+    sender_id   = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=True)  # null = broadcast/global
+    body        = db.Column(db.Text,      nullable=False)
+    timestamp   = db.Column(db.DateTime,  default=datetime.utcnow, nullable=False)
+    sender      = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver    = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+
 
 
 class User(db.Model):

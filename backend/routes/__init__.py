@@ -8,6 +8,7 @@ from routes.game import game_bp
 from routes.music import music_bp
 from routes.achievements import achievements_bp
 from routes.sponsors import sponsor_bp
+from routes.chat import chat_bp
 
 
 from flask_mailman import Mail
@@ -33,5 +34,6 @@ def create_app():
     app.register_blueprint(game_bp, url_prefix="/game")
     app.register_blueprint(achievements_bp, url_prefix="/achievements")
     app.register_blueprint(sponsor_bp)
+    app.register_blueprint(chat_bp)
 
     return app
