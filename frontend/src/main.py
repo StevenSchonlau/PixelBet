@@ -22,7 +22,7 @@ from themeShop import draw_theme_shop, initialize_theme_shop
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
 from notifications import initialize_notification, draw_notification
 from timeLimits import initialize_time_limit, draw_time_limit, process_time_limit, init_time_limit, initialize_time_limit_reached, draw_time_limit_reached, reset_time
-from settings import initialize_settings, draw_settings_screen, is_resolution_set, fetch_user_resolution, set_resolution_marker
+from settings import initialize_settings, draw_settings_screen, is_resolution_set, fetch_user_resolution, set_resolution_marker, is_button_sound_enabled
 import multipleGames
 
 pygame.init()
@@ -57,7 +57,7 @@ def main():
         events = pygame.event.get()  # Collect all events
         
         for event in events:
-            if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED and is_button_sound_enabled():
                 button_click_sound.play()
             if event.type == VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h))
