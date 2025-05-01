@@ -89,7 +89,7 @@ def initialize_lottery(ui_manager):
     )
 
 def proceed_with_lottery():
-    global countdown_start, net_worth
+    global countdown_start, net_worth, play_button
 
     selected_lottery = lottery_dropdown.selected_option[0]
     num_tickets = int(ticket_input.get_text())
@@ -98,6 +98,8 @@ def proceed_with_lottery():
     net_worth -= total_cost
     countdown_start = time.time()  # Start countdown
     result_label.set_text(f"Playing {selected_lottery}... Waiting for result.")
+    play_button.disable()  # Disable the play button to prevent multiple clicks
+
 
 def draw_lottery_screen(screen, events, ui_manager):
     global net_worth, back_button, lottery_dropdown, ticket_input, play_button, result_label, countdown_start
@@ -123,9 +125,9 @@ def draw_lottery_screen(screen, events, ui_manager):
 
         
     if countdown_start:  
-        remaining_time = 30 - (time.time() - countdown_start)
+        remaining_time = 10 - (time.time() - countdown_start)
         if remaining_time <= 0:
-            resolve_lottery()
+            resolve_lottery(ui_manager)
         else:
             result_label.set_text(f"Result in {int(remaining_time)} seconds...")
 
@@ -186,30 +188,34 @@ def start_lottery(ui_manager):
     except ValueError:
         result_label.set_text("Invalid ticket amount!")
 
-def resolve_lottery():
+def resolve_lottery(ui_manager):
     global countdown_start, net_worth
     countdown_start = None
 
     selected_lottery = lottery_dropdown.selected_option[0]
     num_tickets = int(ticket_input.get_text())
 
+    total_cost = num_tickets * (STANDARD_LOTTERY_PRICE if selected_lottery == "Standard Lottery" else QUICK_LOTTERY_PRICE)
+    old_balance = net_worth + total_cost
+    old_balance = round(old_balance, 2)
+
     # Total pool of 100 tickets
     tickets = ["Lose"] * 100
 
-    # Standard Lottery winnings (balanced)
+    # Standard Lottery winnings
     if selected_lottery == "Standard Lottery":
-        winners = random.sample(range(100), 16)  # Pick winners without replacement
+        winners = random.sample(range(100), 16)
         jackpot, mid_winners, small_winners = winners[0], winners[1:6], winners[6:16]
 
-        tickets[jackpot] = 1000  # 1 winner: Jackpot ($1,000)
+        tickets[jackpot] = 500  # 1 winner: Jackpot ($500)
         for index in mid_winners:
             tickets[index] = 50  # 5 winners: Medium prize ($50 each)
         for index in small_winners:
             tickets[index] = 15  # 10 winners: Small prize ($15 each)
 
-    # Quick Lottery winnings (lower payout)
+    # Quick Lottery winnings
     elif selected_lottery == "Quick Lottery":
-        winners = random.sample(range(100), 26)  # Pick winners without replacement
+        winners = random.sample(range(100), 26)
         big_winners, mid_winners, small_winners = winners[:1], winners[1:6], winners[6:26]
 
         tickets[big_winners[0]] = 100  # 1 winner: Big prize ($100)
@@ -220,8 +226,39 @@ def resolve_lottery():
 
     # Select player's tickets **without replacement**
     selected_tickets = random.sample(tickets, num_tickets)
-    winnings = sum(selected_tickets) if isinstance(selected_tickets[0], int) else 0
-    lost_tickets = num_tickets - sum(1 for ticket in selected_tickets if isinstance(ticket, int))
+    winnings = sum(ticket for ticket in selected_tickets if isinstance(ticket, int))
+    lost_tickets = sum(1 for ticket in selected_tickets if ticket == "Lose")
 
     net_worth += winnings
-    result_label.set_text(f"Lottery Over! {lost_tickets} tickets lost.\nTotal winnings: ${winnings}\nTotal Balance: ${net_worth:.2f}")
+    earning_loss = winnings - total_cost
+    new_balance = net_worth
+    new_balance = round(new_balance, 2)
+
+    # Generate report breakdown
+    win_counts = {}
+    for ticket in selected_tickets:
+        if isinstance(ticket, int) and ticket > 0:
+            win_counts[ticket] = win_counts.get(ticket, 0) + 1
+
+    win_details = "<br>"
+    for amount, count in win_counts.items():
+        win_details += f"{count} won ${amount}<br>"
+
+
+    # Display summary popup
+    pygame_gui.windows.UIMessageWindow(
+        rect=pygame.Rect((current_width // 2 - 250, current_height // 2 - 200, 500, 400)),
+        manager=ui_manager,
+        window_title="Lottery Summary",
+        html_message=f"""
+        You purchased {num_tickets} {selected_lottery} tickets in total for ${total_cost}.<br>
+        {lost_tickets} didn't win anything.
+        {win_details}<br><br>
+        Your net earning/loss is: ${earning_loss}<br>
+        Your new balance is:<br>
+        ${old_balance} ({'+' if earning_loss >= 0 else '-'} {abs(earning_loss)}) = ${new_balance}
+        """
+    )
+    ticket_input.set_text("")  # Clear the ticket input field
+    play_button.enable()  # Re-enable the play button
+    result_label.set_text("Waiting for result...")  # Reset the result label
