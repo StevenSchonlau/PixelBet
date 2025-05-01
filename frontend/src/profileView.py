@@ -304,8 +304,10 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
     ui_manager.update(1 / 60)
     ui_manager.draw_ui(screen)
 
-    ui_dict["room_label"].set_text(f"{owns_room_list[active_room_index]} room")
-    ui_dict["theme_label"].set_text(f"{owns_themes[active_theme_index]} theme")
+    if "room_label" in ui_dict:
+        ui_dict["room_label"].set_text(f"{owns_room_list[active_room_index]} room")
+    if "theme_label" in ui_dict:
+        ui_dict["theme_label"].set_text(f"{owns_themes[active_theme_index]} theme")
 
     
     if error:
