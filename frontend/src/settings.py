@@ -107,13 +107,26 @@ def initialize_settings(ui_manager):
     dropdown_width = 200
     dropdown_height = 40
 
+    resolution_label = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect(
+            current_width // 2 - dropdown_width // 2 - 100, 
+            current_height // 2 - dropdown_height // 2, 
+            dropdown_width, 
+            dropdown_height
+        ),
+        text="Screen Resolution:",
+        manager=ui_manager, 
+        )
+
     resolution_dropdown = pygame_gui.elements.UIDropDownMenu(
         options_list=AVAILABLE_RESOLUTIONS,
         starting_option=starting,
-        relative_rect=pygame.Rect(
-        (current_width // 2 - dropdown_width // 2, current_height // 2 - dropdown_height // 2,
-         dropdown_width, dropdown_height)
-    ),
+        relative_rect=pygame.Rect( 
+            current_width // 2 - dropdown_width // 2 + 100, 
+            current_height // 2 - dropdown_height // 2,
+            dropdown_width, 
+            dropdown_height
+        ),
         manager=ui_manager,
         container= None,
         object_id="#resolution_dropdown"
