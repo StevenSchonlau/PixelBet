@@ -115,7 +115,7 @@ def initialize_notification(ui_manager):
 
     global networth_max
     networth_max = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 *5 , SCREEN_HEIGHT // 8 * 3.8), (SCREEN_WIDTH // 8 * 3,50)),
+        relative_rect=pygame.Rect((screen_width // 8 *5 , screen_height // 2), (screen_width // 8 * 3,50)),
         manager=ui_manager,
         object_id="networth_max",
         placeholder_text="Max"
@@ -127,7 +127,7 @@ def initialize_notification(ui_manager):
 
     global networth_min
     networth_min = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 8, SCREEN_HEIGHT // 8 * 3.8), (SCREEN_WIDTH // 8 * 3,50)),
+        relative_rect=pygame.Rect((screen_width // 8, screen_height // 2), (screen_width // 8 * 3,50)),
         manager=ui_manager,
         object_id="networth_min",
         placeholder_text="Min"
@@ -162,7 +162,7 @@ def initialize_notification(ui_manager):
 def draw_notification(screen, events, ui_manager):
     draw_background(screen)
     title_text_pixel_bet = FONT.render("Notifications", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
+    screen.blit(title_text_pixel_bet, (screen_width // 2 - title_text_pixel_bet.get_width() // 2, 50))
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             global btns
