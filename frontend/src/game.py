@@ -851,7 +851,7 @@ def initialize_game(ui_manager):
     rumor_cost = max(math.floor((net_worth * 0.3) / 5) * 5, 30)  #dynamic, or 30
 
     rumor_button = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((current_width - 400, current_height - 40, 200, 40)),  # Positioned next to Insider Message
+        relative_rect=pygame.Rect((current_width - 560, current_height - 40, 200, 40)),  # Positioned next to Insider Message
         text=f"Rumor ${rumor_cost}",
         manager=ui_manager,
         object_id="rumor-button",
@@ -1217,11 +1217,13 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 # Show insider and rumor buttons, update text
                     insider_button.show()
                     rumor_button.show()
+                    sponsor_button.hide()
                     insight_toggle_button.set_text("Close")
                 else:
                 # Hide insider and rumor buttons, revert text
                     insider_button.hide()
                     rumor_button.hide()
+                    sponsor_button.show()
                     insight_toggle_button.set_text("Insights")
 
             
