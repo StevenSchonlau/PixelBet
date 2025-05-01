@@ -81,7 +81,7 @@ def get_players(ui_manager):
         )
         weekly_net_label = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((100, y), ((container_width // 8) * 5, button_height)),
-            text=f"${player.weekly_net}" if player.weekly_net > 0 else f"-${player.weekly_net * -1}",
+            text=f"${player.weekly_net}" if player.weekly_net >= 0 else f"-${player.weekly_net * -1}",
             manager=ui_manager,
             container=container,
             object_id="#friend_result"

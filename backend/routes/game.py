@@ -136,3 +136,16 @@ def get_bet_history_route(user_id):
 
     return jsonify({"bet_history": bet_history_data}), 200
 
+@game_bp.route('/update-streak/<uuid:user_id>', methods=['GET'])
+def update_streak(user_id):
+    user = User.query.filter_by(id=str(user_id)).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    data = request.get_json()
+    try:
+        user.streak = data['streak']
+        db.session.commit()
+        return jsonify({'message': 'Streak updated successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update streak', 'error': str(e)}), 500
