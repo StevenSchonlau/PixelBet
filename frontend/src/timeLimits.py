@@ -106,7 +106,7 @@ def initialize_time_limit(ui_manager):
 
     global time_limit_field
     time_limit_field = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(
-        relative_rect=pygame.Rect((SCREEN_WIDTH // 8 *2 , SCREEN_HEIGHT // 8 * 3.8), (SCREEN_WIDTH // 8 * 4,50)),
+        relative_rect=pygame.Rect((screen_width // 8 *2 , (screen_height // 8) * 5), (screen_width // 8 * 4,50)),
         manager=ui_manager,
         object_id="time_limit",
         placeholder_text="Limit (minutes)"
@@ -126,10 +126,10 @@ def draw_time_limit(screen, events, ui_manager):
     draw_background(screen)
     global btns, has_time_limit
     title_text_pixel_bet = FONT.render("Time Limit", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, SCREEN_HEIGHT //8 * 1))
+    screen.blit(title_text_pixel_bet, (screen_width // 2 - title_text_pixel_bet.get_width() // 2, screen_height //8 * 1))
     if has_time_limit:
         time_left_txt = FONT.render(f"Time Left: {(time_limit * 60 - total_day_time):.2f}", True, WHITE)
-        screen.blit(time_left_txt, (SCREEN_WIDTH // 2 - time_left_txt.get_width() // 2, SCREEN_HEIGHT // 8 * 2))
+        screen.blit(time_left_txt, (screen_width // 2 - time_left_txt.get_width() // 2, screen_height // 8 * 2))
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             text = event.ui_element.text
@@ -189,7 +189,7 @@ def initialize_time_limit_reached(ui_manager):
 def draw_time_limit_reached(screen, events, ui_manager):
     draw_background(screen)
     title_text_pixel_bet = FONT.render("Time Limit Reached", True, WHITE)
-    screen.blit(title_text_pixel_bet, (SCREEN_WIDTH // 2 - title_text_pixel_bet.get_width() // 2, 50))
+    screen.blit(title_text_pixel_bet, (screen_width // 2 - title_text_pixel_bet.get_width() // 2, 50))
     for event in events:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             global btns
