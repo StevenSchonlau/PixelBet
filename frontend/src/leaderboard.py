@@ -44,7 +44,8 @@ def get_players(ui_manager):
     if response.status_code == 200:
         users = response.json()
         for user in users:
-            player_obj = User(user["username"], user["id"], net_worth=float(user["net_worth"]))
+            print("weekly", user["weekly_net_worth"])
+            player_obj = User(user["username"], user["id"], net_worth=float(user["net_worth"]), weekly_net=float(user["weekly_net_worth"]))
             players.append(player_obj)
         error = None
     else:
