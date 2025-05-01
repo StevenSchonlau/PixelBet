@@ -44,7 +44,8 @@ def get_players(ui_manager):
     if response.status_code == 200:
         users = response.json()
         for user in users:
-            player_obj = User(user["username"], user["id"], net_worth=float(user["net_worth"]))
+            print("weekly", user["weekly_net_worth"])
+            player_obj = User(user["username"], user["id"], net_worth=float(user["net_worth"]), weekly_net=float(user["weekly_net_worth"]))
             players.append(player_obj)
         error = None
     else:
@@ -59,21 +60,28 @@ def get_players(ui_manager):
     ui_dict["nets"] = clean_buttons("nets")
 
     button_height = 40
-    start_y = 0
+    start_y = 50
     container = ui_dict["board_scroll"].scrollable_container
     container_width = container.get_size()[0]
     for i, player in enumerate(players):
         y = start_y + i * (button_height + 10)
         result_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((100, y), (container_width - 600, button_height)),
+            relative_rect=pygame.Rect((100, y), ((container_width // 8) * 1, button_height)),
             text=f"{player.username}",
             manager=ui_manager,
             container=container,
             object_id="#friend_result"
         )
         net_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((100, y), (container_width - 400, button_height)),
+            relative_rect=pygame.Rect((100, y), ((container_width // 8) * 3, button_height)),
             text=f"${player.net_worth}",
+            manager=ui_manager,
+            container=container,
+            object_id="#friend_result"
+        )
+        weekly_net_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((100, y), ((container_width // 8) * 5, button_height)),
+            text=f"${player.weekly_net}" if player.weekly_net > 0 else f"-${player.weekly_net * -1}",
             manager=ui_manager,
             container=container,
             object_id="#friend_result"
@@ -148,6 +156,29 @@ def draw_leaderboard(ui_manager):
     )
     ui_dict["board_scroll"] = board_scroll
     ui_dict["board_panel"] = board_panel
+    container = ui_dict["board_scroll"].scrollable_container
+    container_width = container.get_size()[0]
+    name_header = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((10, 10), ((container_width // 8) * 2.5, 100)),
+        text="Name",
+        manager=ui_manager,
+        container=board_panel,
+        object_id="#panel_label"
+    )
+    name_header = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((10, 10), ((container_width // 8) * 4.5, 100)),
+        text="Net",
+        manager=ui_manager,
+        container=board_panel,
+        object_id="#panel_label"
+    )
+    name_header = pygame_gui.elements.UILabel(
+        relative_rect=pygame.Rect((10, 10), ((container_width // 8) * 7, 100)),
+        text="Weekly",
+        manager=ui_manager,
+        container=board_panel,
+        object_id="#panel_label"
+    )
     refresh_data(ui_manager)
 
 def init_leaderboard_page(ui_manager):

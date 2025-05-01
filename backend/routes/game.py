@@ -1,26 +1,52 @@
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, render_template
-from models import db, User, bcrypt, BetHistory
-
-from datetime import datetime
-import os
 from flask_mailman import EmailMessage
+from models import db, User, bcrypt, BetHistory
+from sqlalchemy import select
+import os
 import uuid
 
 game_bp = Blueprint('game', __name__)
 
 @game_bp.route('/all-net', methods=['GET'])
 def get_all_net():
+    def get_last_sunday():
+        today = datetime.utcnow()
+        # Weekday: Monday=0, Sunday=6 → adjust so Sunday is 0
+        days_since_sunday = (today.weekday() + 1) % 7
+        last_sunday = today - timedelta(days=days_since_sunday)
+        return last_sunday.replace(hour=0, minute=0, second=0, microsecond=0)
+    last_sunday = get_last_sunday()
     users = User.query.all()
-    
-    if users:
-        user_data = [{
+
+    if not users:
+        return jsonify({"message": "Failed"}), 400
+
+    user_data = []
+    for user in users:
+        # Get all relevant bets for the user in the last 7 days
+        weekly_bets = db.session.execute(
+            select(BetHistory)
+            .where(BetHistory.user_id == user.id)
+            .where(BetHistory.date >= last_sunday)
+        ).scalars().all()
+
+        # Calculate net result from those bets
+        net = 0
+        for bet in weekly_bets:
+            if bet.outcome == 'win':
+                net += bet.amount * bet.odds  # assuming this is the return
+            elif bet.outcome == 'loss':
+                net -= bet.amount
+
+        user_data.append({
             "username": user.username,
             "id": user.id,
-            "net_worth": user.net_worth
-        } for user in users]
-        return jsonify(user_data), 200
-    else:
-        return jsonify({"message": "Failed"}), 400
+            "net_worth": user.net_worth,
+            "weekly_net_worth": net
+        })
+
+    return jsonify(user_data), 200
     
 @game_bp.route('/get-net-worth/<uuid:user_id>', methods=['GET']) 
 def get_net_worth(user_id):
