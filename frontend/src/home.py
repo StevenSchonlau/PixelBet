@@ -124,7 +124,8 @@ def initialize_home(ui_manager):
         {"id": "music_shop_btn", "text": "Music Shop"},
         {"id": "shirt_shop_btn", "text": "Shirt Shop"},
         {"id": "room_shop_btn", "text": "Room Shop"},
-        {"id": "theme_shop_btn", "text": "Theme Shop"}
+        {"id": "theme_shop_btn", "text": "Theme Shop"},
+        {"id": "lottery_btn", "text": "Lottery"}
     ]
 
     y_cosmetic = 180
@@ -256,6 +257,8 @@ def draw_home_screen(screen, events, ui_manager):
                 selected_game = "room"
             elif "Theme" in event.ui_element.text and "Shops" not in event.ui_element.text:
                 selected_game = "theme"
+            elif "Lottery" in event.ui_element.text:
+                selected_game = "lottery"
             elif "Music" in event.ui_element.text:
                 selected_game = "music"
             elif "Shirt" in event.ui_element.text:

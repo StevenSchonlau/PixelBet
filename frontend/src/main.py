@@ -19,6 +19,7 @@ from musicShop import draw_music_shop, initialize_music_shop, play_music
 from shirtShop import draw_shirt_shop, initialize_shirt_shop
 from roomShop import draw_room_shop, initialize_room_shop
 from themeShop import draw_theme_shop, initialize_theme_shop
+from lottery import initialize_lottery, draw_lottery_screen
 from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
 from notifications import initialize_notification, draw_notification
 from timeLimits import initialize_time_limit, draw_time_limit, process_time_limit, init_time_limit, initialize_time_limit_reached, draw_time_limit_reached, reset_time
@@ -181,6 +182,16 @@ def main():
                     theme_result = draw_theme_shop(screen, events, ui_manager)
 
                     if theme_result == "home":  # If "Back" is pressed in crypto, return to home
+                        selected_game = None
+                        initialize_home(ui_manager)
+                        initialized = "home"
+                elif selected_game == "lottery":
+                    if initialized != "lottery":
+                        initialize_lottery(ui_manager)
+                        initialized = "lottery"
+                    lottery_result = draw_lottery_screen(screen, events, ui_manager)
+
+                    if lottery_result == "home":  # If "Back" is pressed in lottery, return to home
                         selected_game = None
                         initialize_home(ui_manager)
                         initialized = "home"
