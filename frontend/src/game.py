@@ -1,13 +1,14 @@
-from achievements import check_achievements, set_ach_popup, get_ach_popup
-from constants import *
-from login import get_user  # Replace 'login' with the actual module name
-from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
-from settings import is_winning_sound_enabled, is_losing_sound_enabled, is_money_sound_enabled
-import datetime
 import math
 import pygame
-import pygame_gui
 import random
+import datetime
+import pygame_gui
+from constants import *
+from achievements import check_achievements, set_ach_popup, get_ach_popup
+from login import get_user  # Replace 'login' with the actual module name
+from settings import is_winning_sound_enabled, is_losing_sound_enabled, is_money_sound_enabled
+from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
+
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 SPONSOR_TIERS = {
@@ -61,6 +62,7 @@ chance_labels = {}
 owned_tiers = {}
 streak = 0
 max_streak = 0
+match_bet_global = None
 DEFAULT_BG   = pygame.Color('#CCCCCC')
 OWNED_BG  = pygame.Color('#88FF88')
 SELECTED_BG   = pygame.Color('#00AA00')
@@ -720,6 +722,13 @@ def initialize_game(ui_manager):
     horse_bets = {horse["name"]: 0 for horse in horses}
     horse_names = [horse["name"] for horse in horses]
     pending_bets = {horse["name"]: 0 for horse in horses}
+
+    import profileView
+    if profileView.match_bet:
+        match_bet = profileView.match_bet
+        pending_bets[match_bet.get("horse")] = match_bet.get("amount")
+        profileView.match_bet = None
+
 
     existing_data, net_worth = load_sponsorships()
     sponsor_boost = {}

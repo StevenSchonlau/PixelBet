@@ -36,6 +36,7 @@ def get_all_users():
 def getProfile(user_id):
     user = User.query.filter_by(id=str(user_id)).first()
     if user:
+        recent_bets = sorted(user.bet_history, key=lambda bet: bet.date, reverse=True)[:3]
         return jsonify({
             "username": user.username,
             "id": user.id,
@@ -47,8 +48,13 @@ def getProfile(user_id):
             "owns_room_list": user.owns_room_list,
             "active_theme": user.active_theme,
             "owns_themes": user.owns_themes,
-            "resolution_width":  user.resolution_width,
+            "resolution_width": user.resolution_width,
             "resolution_height": user.resolution_height,
+            "bet_history": [{
+                "date": bet.date.isoformat(),
+                "horse": bet.horse,
+                "amount": bet.amount,
+            } for bet in recent_bets],
         })
     return jsonify({'message': 'User doesn\'t exist'}), 401
 
