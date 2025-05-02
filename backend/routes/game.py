@@ -57,7 +57,9 @@ def get_net_worth(user_id):
     return jsonify({
         'username': user.username,
         'id': user.id,
-        'net_worth': user.net_worth
+        'net_worth': user.net_worth,
+        'streak': user.streak,
+        'max_streak': user.max_streak
     }), 200
     
 @game_bp.route('/update-net-worth/<uuid:user_id>', methods=['POST'])
@@ -73,7 +75,7 @@ def update_net_worth(user_id):
     try:
         user.net_worth = data['net_worth']
         db.session.commit()
-        return jsonify({'message': 'Net worth updated successfully'}), 200
+        return jsonify({'message': 'Net worth updated successfully', 'streak': user.streak}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': 'Failed to update net worth', 'error': str(e)}), 500
@@ -136,14 +138,28 @@ def get_bet_history_route(user_id):
 
     return jsonify({"bet_history": bet_history_data}), 200
 
-@game_bp.route('/update-streak/<uuid:user_id>', methods=['GET'])
+@game_bp.route('/update-streak/<uuid:user_id>', methods=['POST'])
 def update_streak(user_id):
     user = User.query.filter_by(id=str(user_id)).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
     data = request.get_json()
     try:
-        user.streak = data['streak']
+        if data['streak'] == 1:
+            user.streak = user.streak + 1
+        else:
+            user.streak = 0
+
+        if user.streak == 3:
+            user.net_worth = user.net_worth + 100
+        elif user.streak == 5:
+            user.net_worth = user.net_worth + 1000
+        elif user.streak == 10:
+            user.net_worth = user.net_worth + 5000
+        
+        if user.streak > user.max_streak:
+            user.max_streak = user.streak
+
         db.session.commit()
         return jsonify({'message': 'Streak updated successfully!'}), 200
     except Exception as e:

@@ -1,13 +1,13 @@
-import pygame
-import pygame_gui
-import datetime
-import random
-import math
+from achievements import check_achievements, set_ach_popup, get_ach_popup
 from constants import *
 from login import get_user  # Replace 'login' with the actual module name
-from achievements import check_achievements, set_ach_popup, get_ach_popup
 from notifications import get_user_notification_preferences_results, get_user_networth_min_max, send_networth_email
 from settings import is_winning_sound_enabled, is_losing_sound_enabled, is_money_sound_enabled
+import datetime
+import math
+import pygame
+import pygame_gui
+import random
 BASE_URL = SERVER_URL
 USER_ID = get_user()
 SPONSOR_TIERS = {
@@ -59,13 +59,15 @@ sponsor_buttons = {}
 sponsor_selection = {}
 chance_labels = {}
 owned_tiers = {}
+streak = 0
+max_streak = 0
 DEFAULT_BG   = pygame.Color('#CCCCCC')
 OWNED_BG  = pygame.Color('#88FF88')
 SELECTED_BG   = pygame.Color('#00AA00')
 
 def fetch_net_worth():
     """Fetches the user's net worth from the backend API."""
-    global USER_ID, BASE_URL
+    global USER_ID, BASE_URL, streak, max_streak
     BASE_URL = SERVER_URL
     USER_ID = get_user()
 
@@ -75,13 +77,12 @@ def fetch_net_worth():
         response = requests.get(f"{BASE_URL}/game/get-net-worth/{get_user()}")
         if response.status_code == 200:
             data = response.json()
-            print(f"🔄 Fetched net worth: ${data['net_worth']}")
+            streak = data.get('streak', 0)
+            max_streak = data.get('max_streak', 0)
             return(float(data.get('net_worth', 0.0)))
         else:
-            print(f"⚠️ Failed to fetch net worth: {response.json()}")
             return 0
     except Exception as e:
-        print(f"❌ Error fetching net worth: {str(e)}")
         return 0
 
 def send_bet_email(win, amount, wh, lh=""):
@@ -99,7 +100,6 @@ def send_bet_email(win, amount, wh, lh=""):
         }
         requests.post(f"{BASE_URL}/send-bet-email", json=data)
     except Exception as e:
-        print(f"❌ Error sending email: {str(e)}")
         return 0
 
 def load_sponsorships():
@@ -303,37 +303,35 @@ def draw_game_background(surface):
 
 def update_net_worth(new_balance):
     """Updates the user's net worth on the backend API."""
-    global show_achievement_popup, new_achievements
+    global show_achievement_popup, new_achievements, streak, max_streak
     BASE_URL = SERVER_URL
     USER_ID = get_user()
     if not USER_ID:
-        print("❌ No user logged in!")
         return
 
     the_min, the_max = get_user_networth_min_max()
     try:
+        # Update the net worth
         response = requests.post(
             f"{BASE_URL}/game/update-net-worth/{USER_ID}",
             json={"net_worth": new_balance}
         )
         if response.status_code == 200:
+            data = response.json()
+            streak = data['streak']
+            max_streak = data['max_streak']
             if new_balance < the_min:
                 send_networth_email(new_balance, the_min, -1)
             elif new_balance > the_max:
                 send_networth_email(new_balance, -1, the_max)
-            print(f"✅ Net worth updated successfully: ${new_balance}")
             '''add achievment check'''
             new_achievements = check_achievements(USER_ID)
             if new_achievements:
-                print("set popup to true")
                 set_ach_popup(True)
             else:
                 set_ach_popup(False)
-                print("no new achievement")
-        else:
-            print(f"⚠️ Failed to update net worth: {response.json()}")
     except Exception as e:
-        print(f"❌ Error updating net worth: {str(e)}")
+        pass
 
 def fetch_bet_history(user_id):
     """Fetches the user's bet history from the backend API and updates the global bet_history list."""
@@ -342,16 +340,13 @@ def fetch_bet_history(user_id):
         response = requests.get(f"{BASE_URL}/game/get-bet-history/{user_id}")
         if response.status_code == 200:
             data = response.json()
-            print("🔄 Fetched bet history:", data)
             # Assume the response returns a dictionary with a "bet_history" key.
             bet_history = data.get("bet_history", [])
             return bet_history
         else:
-            print("⚠️ Failed to fetch bet history:", response.status_code, response.json())
             bet_history = []
             return bet_history
     except Exception as e:
-        print("❌ Error fetching bet history:", str(e))
         bet_history = []
         return bet_history
 
@@ -359,18 +354,13 @@ def update_bet_history(bets_placed):
     """Sends the current bets_placed list to the backend and then leaves it unchanged (it will be cleared after a successful update)."""
     global BASE_URL, USER_ID
     if not bets_placed:
-        print("No bets to update.")
         return
 
     try:
         payload = {"bets": bets_placed}  # send current bets
         response = requests.post(f"{BASE_URL}/game/update-bet-history/{USER_ID}", json=payload)
-        if response.status_code == 200:
-            print("✅ Bet history updated successfully.")
-        else:
-            print("⚠️ Failed to update bet history:", response.status_code, response.json())
     except Exception as e:
-        print("❌ Error updating bet history:", str(e))
+        pass
 
 def filter_and_sort_bets(bets, date_filter, sort_order):
     from datetime import datetime, timedelta
@@ -643,14 +633,11 @@ def draw_betting_table(ui_manager):
 def place_bet(horse_name, bet_amount, horse_odds):
     """Stores the bet details and deducts from user balance for new bets only."""
     global bet_history, bets_placed, net_worth
-    print(bet_amount)
     if bet_amount <= 0:
         return "Error: Bet amount must be greater than 0!"
 
     # Check if a bet already exists on this horse
     existing_bet = next((bet for bet in bets_placed if bet["horse"] == horse_name), None)
-    print("existing_bet:")
-    print(existing_bet)
 
 
     if betting_limit is not None:
@@ -663,8 +650,6 @@ def place_bet(horse_name, bet_amount, horse_odds):
     if existing_bet:
         # **Modify existing bet amount**
         bet_difference = bet_amount - existing_bet["amount"]
-        print("bet_difference:")
-        print(bet_difference)
 
         # Ensure the user has enough funds if increasing bet
         if bet_difference > net_worth:
@@ -696,7 +681,6 @@ def place_bet(horse_name, bet_amount, horse_odds):
             "amount": bet_amount,
             "outcome": "undecided",
         }
-        print(bet_details)
 
         # Add to active bets and bet history
         bets_placed[:] = [bet for bet in bets_placed if bet["horse"] != horse_name]
@@ -705,7 +689,6 @@ def place_bet(horse_name, bet_amount, horse_odds):
         # **Update bet history in the same way**
         bet_history.append(bet_details)  
 
-        print(f"✅ Bet placed: {bet_details}")
         return "Bet placed successfully!"
 
 def initialize_game(ui_manager):
@@ -754,8 +737,9 @@ def initialize_game(ui_manager):
         bonus  = sponsor_boost[h["name"]]
         weights.append(base_w + bonus)
 
-    winning_horse = random.choices(horse_names, weights=weights, k=1)[0]
-    print(f"🏆 Predetermined Winner: {winning_horse}")
+    # RIGGED FOR DEBUGING STREAK
+    # winning_horse = random.choices(horse_names, weights=weights, k=1)[0]
+    winning_horse = "Lightning Bolt"
 
     # Reset horse positions
     horse_positions = {horse["name"]: 120 for horse in horses}
@@ -961,14 +945,32 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
     """Handles the horse derby game betting screen with a table and race visualization."""
     global bet_history, race_start_time, bets_placed, message_label, winner_announced, net_worth
     global horses, horse_positions, racing_phase, winning_horse, showing_history, horse_bets, pending_bets, current_date_filter, current_sort_order
-    global current_width, current_height, sponsor_button, sponsor_panel, sponsor_close_button
+    global current_width, current_height, sponsor_button, sponsor_panel, sponsor_close_button, streak, max_streak
     draw_game_background(screen)
 
     # Show game and balance info
-    game_text = FONT.render(f"Bet on: {selected_game}", True, WHITE)
+    game_text = FONT.render(f"{selected_game}", True, WHITE)
     balance_text = FONT.render(f"Balance: ${net_worth:.2f}", True, WHITE)
+    streak_text = FONT.render(f"Streak: {streak}", True, WHITE)
+    max_streak_text = SMALL_FONT.render(f"Max Streak: {max_streak}", True, WHITE)
+
+    padding = 10
+    line_spacing = 5
+
+    balance_x = current_width - balance_text.get_width() - padding
+    balance_y = padding
+
+    streak_x = current_width - streak_text.get_width() - padding
+    streak_y = balance_y + balance_text.get_height() + line_spacing
+
+    max_streak_x = current_width - max_streak_text.get_width() - padding
+    max_streak_y = streak_y + streak_text.get_height() + line_spacing
+
     screen.blit(game_text, (current_width // 2 - game_text.get_width() // 2, 50))
-    screen.blit(balance_text, (current_width - balance_text.get_width(), 10))
+    screen.blit(balance_text, (balance_x, balance_y))
+    screen.blit(streak_text, (streak_x, streak_y))
+    screen.blit(max_streak_text, (max_streak_x, max_streak_y))
+
 
     # Time logic
     now = datetime.datetime.now()
@@ -982,13 +984,11 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         race_timer_label.set_text(f"Next Race: {time_remaining}s")
         
     if time_elapsed >= 20 and not racing_phase:
-        print("🏇 Race Starting!")
         time_remaining = 30
         racing_phase = True  # Enter racing phase
         #winning_horse = random.choice(horses)["name"]  # Select winner
 
     if time_elapsed == 25 and not winner_announced:
-        print(f"🏆 Winning Horse: {winning_horse}")
         message_label.set_text(f"Winning Horse: {winning_horse}")
         global result_notifications
         # Process bets
@@ -999,7 +999,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                 if result_notifications:
                     send_bet_email(True, winnings, winning_horse)
                 net_worth += winnings
-                print(f"🎉 Winner! Won ${winnings} on {winning_horse}")
                 message_label.set_text(f"Winner! Won ${winnings} on {winning_horse}")
                 if (play_sound_effects) and (is_winning_sound_enabled()):
                     winning_sound.play()
@@ -1020,6 +1019,18 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
         winner_announced = False
         update_net_worth(net_worth)
         update_bet_history(bets_placed)
+        streak_flag = None
+        for bet in bets_placed:
+            if bet["outcome"] == "loss":
+                streak_flag = 1
+                break
+            elif bet["outcome"] == "win":
+                streak_flag = 0
+        if streak_flag is not None:
+            response = requests.post(
+                f"{BASE_URL}/game/update-streak/{USER_ID}",
+                json={"streak": 0 if streak_flag == 1 else 1}
+            )
         bets_placed.clear()
         initialize_game(ui_manager)  # Reset horses
     if racing_phase == False:
@@ -1089,16 +1100,13 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
 
 
         if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
-            print("drop down changed")
             if event.ui_element == table_elements.get("date_dropdown"):
                 selected = event.text  # e.g. "Past 30s", "Past 1m", "Past 1h", or "All"
-                print(selected)
                 current_date_filter = selected # "30s", "1m", or "1h"
                 clear_table_elements()
                 draw_bet_history(ui_manager)  # Redraw history with the new filter
             elif event.ui_element == table_elements.get("sort_dropdown"):
                 selected = event.text  # "None", "Largest amounts", or "Smallest amounts"
-                print(selected)
                 current_sort_order = selected
                 clear_table_elements()
                 draw_bet_history(ui_manager)
@@ -1160,7 +1168,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                         if resp.status_code == 200 and resp.json().get('message')=='deactivated':
                             sponsor_selection[horse] = None
                             sponsor_boost[horse]     = 0.0
-                            print(f"Deactivated sponsorship for {horse} ({tier})")
                         else:
                             message_label.set_text("Error deactivating sponsorship.")
                     #  ─── Activate if it wasn’t active ──────────────────────
@@ -1172,7 +1179,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                         if resp.status_code == 200 and resp.json().get('message')=='activated':
                             sponsor_selection[horse] = tier
                             sponsor_boost[horse]     = SPONSOR_TIERS[tier]['boost']
-                            print(f"Activated sponsorship for {horse} ({tier})")
                         else:
                             message_label.set_text("Error activating sponsorship.")
 
@@ -1196,7 +1202,6 @@ def draw_game_screen(screen, events, ui_manager, selected_game):
                     lbl.set_text(f"{int(probs[hn] * 100)}%")
             
             if event.ui_element == back_button:
-                print("Returning to home screen")
                 update_net_worth(net_worth)
                 return None  # Go back to home
             
