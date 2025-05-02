@@ -13,6 +13,7 @@ selected_player = None
 initialized = False
 curr_player = None
 current_width, current_height = 0, 0
+sort_by_weekly = False
 
 def refresh_data(ui_manager):
     get_players(ui_manager)
@@ -52,9 +53,15 @@ def get_players(ui_manager):
         print("Error:", response.status_code, response.json())
         error = "An error occurred"
 
-    players.sort(key=lambda player: player.net_worth, reverse=True)
+    global sort_by_weekly
+    if not sort_by_weekly:
+        players.sort(key=lambda player: player.weekly_net, reverse=True)
+    else:
+        players.sort(key=lambda player: player.net_worth, reverse=True)
+
 
     ui_dict["players"] = clean_buttons("players")
+    ui_dict["weeklies"] = clean_buttons("weeklies")
     ui_dict["add_friends"] = clean_buttons("add_friends")
     ui_dict["view_profile_buttons"] = clean_buttons("view_profile_buttons")
     ui_dict["nets"] = clean_buttons("nets")
@@ -103,6 +110,7 @@ def get_players(ui_manager):
         view_profile_button.user = player
         add_friend.user = player
         ui_dict["players"].append(result_label)
+        ui_dict["weeklies"].append(weekly_net_label)
         ui_dict["nets"].append(net_label)
         ui_dict["view_profile_buttons"].append(view_profile_button)
         ui_dict["add_friends"].append(add_friend)
@@ -179,6 +187,14 @@ def draw_leaderboard(ui_manager):
         container=board_panel,
         object_id="#panel_label"
     )
+    toggle_sort_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((board_panel_rect.width - 160, 5), (150, 30)),
+        text="Weekly",
+        manager=ui_manager,
+        container=board_panel,
+        object_id="#sort_toggle"
+    )
+    ui_dict["sort_toggle"] = toggle_sort_button
     refresh_data(ui_manager)
 
 def init_leaderboard_page(ui_manager):
@@ -191,6 +207,7 @@ def init_leaderboard_page(ui_manager):
     ui_dict["board_scroll"] = None
     ui_dict["board_panel"] = None
     ui_dict["players"] = []
+    ui_dict["weeklies"] = []
     ui_dict["view_profile_buttons"] = []
     ui_dict["add_friends"] = []
     ui_dict["nets"] = []
@@ -203,6 +220,7 @@ def init_leaderboard_page(ui_manager):
 
 def draw_leaderboard_page(screen, events, ui_manager, selected_game):
     global error, selected_player, initialized, current_width, current_height
+    global sort_by_weekly
 
     if selected_player:
         if not initialized:
@@ -231,6 +249,11 @@ def draw_leaderboard_page(screen, events, ui_manager, selected_game):
                     error = "You can't friend yourself!"
                 else:
                     add_friend(event.ui_element.user.id)
+            elif event.ui_element == ui_dict.get("sort_toggle"):
+                sort_by_weekly = not sort_by_weekly
+                new_text = "Weekly" if not sort_by_weekly else "Net Worth"
+                ui_dict["sort_toggle"].set_text(new_text)
+                refresh_data(ui_manager)
             elif event.ui_element == ui_dict["refresh"]:
                 refresh_data(ui_manager)
 
