@@ -303,18 +303,21 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
                 error = None
                 import leaderboard
                 leaderboard.selected_player = None
+                leaderboard.initialized = False
             elif event.ui_element == ui_dict.get("recent_bet_button_1"):
                 selected_game = "game"
                 match_bet = recent_bets[1]
                 error = None
                 import leaderboard
                 leaderboard.selected_player = None
+                leaderboard.initialized = False
             elif event.ui_element == ui_dict.get("recent_bet_button_2"):
                 selected_game = "game"
                 match_bet = recent_bets[2]
                 error = None
                 import leaderboard
                 leaderboard.selected_player = None
+                leaderboard.initialized = False
             elif event.ui_element == ui_dict.get("avatar_right"):
                 active_avatar_index = (active_avatar_index + 1) % 2
             elif event.ui_element == ui_dict.get("shirt_left"):
