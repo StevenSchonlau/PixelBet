@@ -74,6 +74,8 @@ class User(db.Model):
     notification_preference_networth = db.Column(db.Boolean, default=False)
     net_worth_min = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
     net_worth_max = db.Column(NUMERIC(precision=12, scale=2), nullable=False, default=0)
+    streak = db.Column(db.Integer, default=0)
+    max_streak = db.Column(db.Integer, default=0)
 
     active_shirt = db.Column(db.Integer, default=0)
     owns_shirts_list = db.Column(MutableList.as_mutable(db.PickleType), default=lambda: ["default"])
