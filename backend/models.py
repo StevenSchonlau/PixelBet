@@ -1,9 +1,9 @@
 import uuid
-from sqlalchemy.dialects.mysql import CHAR, NUMERIC
-from sqlalchemy.ext.mutable import MutableList
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 from datetime import datetime
+from flask_bcrypt import Bcrypt
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.dialects.mysql import CHAR, NUMERIC
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
