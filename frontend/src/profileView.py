@@ -25,14 +25,15 @@ selected_friend = None
 all_shirts = {}
 all_rooms = {}
 bet_history = []
+recent_bets = []
 current_width = 0
 current_height = 0
+match_bet = None
 
 def save_profile():
     global username, ui_dict, error, active_avatar_index, active_shirt_index, active_room_index
     session = UserSession()
     current_user = session.get_user()
-    print(owns_shirts_list[active_shirt_index])
     
     if ui_dict["username"].get_text() == "":
         error = "Cannot leave username blank!"
@@ -61,6 +62,7 @@ def init_profile_view(ui_manager, selected_player=None):
     global avatar, username, active_avatar_index, selected_friend, achievements
     global owns_shirts_list, all_shirts, all_rooms, owns_room_list, active_shirt_index, active_room_index
     global owns_themes, active_theme_index, bet_history, current_width, current_height
+    global match_bet
     all_shirts = {
         "default0": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default1.png"), (200, 200)),
         "default1": pygame.transform.scale(pygame.image.load("frontend/assets/sprites/default2.png"), (200, 200)),
@@ -74,7 +76,7 @@ def init_profile_view(ui_manager, selected_player=None):
         "cozy": pygame.image.load("frontend/assets/rooms/cozyRoom.png"),
         "tech": pygame.image.load("frontend/assets/rooms/techRoom.png"),
     }
-    if selected_player:
+    if selected_player: # Viewing another player's profile
         user = get_profile(selected_player.id)
         selected_friend = selected_player
     else:
@@ -98,7 +100,7 @@ def init_profile_view(ui_manager, selected_player=None):
     else:
         achievements = []
     bet_history = fetch_bet_history(user_id)
-    print(bet_history)
+    match_bet = None
 
     ui_manager.clear_and_reset()
     init_view_profile_ui(ui_manager)
@@ -106,9 +108,11 @@ def init_profile_view(ui_manager, selected_player=None):
 def init_view_profile_ui(ui_manager):
     global username
     global ui_dict, current_height, current_width
+    global recent_bets
+    global bet_history
     ui_manager.clear_and_reset()
+    ui_dict = {}
     current_width, current_height = pygame.display.get_window_size()
-
 
     back_button = draw_button("Back", ui_manager, 0, 0)
     if not selected_friend:
@@ -184,6 +188,28 @@ def init_view_profile_ui(ui_manager):
     achievements_button = draw_button("Achievements", ui_manager, 0, 7.5, size="sm")
     ui_dict["achievements_button"] = achievements_button
 
+    recent_bets = sorted(bet_history, key=lambda bet: bet["date"], reverse=True)[:3]
+    print("bet", recent_bets)
+    if selected_friend:
+        y_offset = current_height // 8 * 1.5
+        label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((current_width // 2 - 100, y_offset - 40), (200, 30)),
+            text="Recent Bets",
+            manager=ui_manager,
+        )
+        ui_dict["recent_bets_label"] = label
+
+        for i, bet in enumerate(recent_bets):
+            bet_text = f"{bet['horse']} - ${bet['amount']}"
+            bet_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect((current_width // 2 - 200, y_offset + i * 60), (400, 40)),
+                text=bet_text,
+                manager=ui_manager,
+                object_id=f"#recent_bet_{i}"
+            )
+            ui_dict[f"recent_bet_button_{i}"] = bet_button
+
+
 def show_achievements_panel(ui_manager):
     global current_width, current_height
     """
@@ -258,7 +284,7 @@ def get_center(text):
 
 def draw_view_profile(screen, events, ui_manager, selected_game):
     global active_avatar_index, active_shirt_index, error, ui_dict, bet_history, active_avatar_index, all_rooms, owns_room_list, active_room_index
-    global active_theme_index, owns_themes, current_width, current_height
+    global active_theme_index, owns_themes, current_width, current_height, match_bet
     bg = all_rooms[ owns_room_list[active_room_index] ]
     bg = pygame.transform.scale(bg, (current_width, current_height))
     screen.blit(bg, (0, 0))
@@ -269,21 +295,39 @@ def draw_view_profile(screen, events, ui_manager, selected_game):
             if text == "Back":
                 selected_game = None
                 error = None
-            elif event.ui_element == ui_dict["avatar_left"]:
+            elif event.ui_element == ui_dict.get("avatar_left"):
                 active_avatar_index = (active_avatar_index - 1) % 2
-            elif event.ui_element == ui_dict["avatar_right"]:
+            elif event.ui_element == ui_dict.get("recent_bet_button_0"):
+                selected_game = "game"
+                match_bet = recent_bets[0]
+                error = None
+                import leaderboard
+                leaderboard.selected_player = None
+            elif event.ui_element == ui_dict.get("recent_bet_button_1"):
+                selected_game = "game"
+                match_bet = recent_bets[1]
+                error = None
+                import leaderboard
+                leaderboard.selected_player = None
+            elif event.ui_element == ui_dict.get("recent_bet_button_2"):
+                selected_game = "game"
+                match_bet = recent_bets[2]
+                error = None
+                import leaderboard
+                leaderboard.selected_player = None
+            elif event.ui_element == ui_dict.get("avatar_right"):
                 active_avatar_index = (active_avatar_index + 1) % 2
-            elif event.ui_element == ui_dict["shirt_left"]:
+            elif event.ui_element == ui_dict.get("shirt_left"):
                 active_shirt_index = (active_shirt_index - 1) % len(owns_shirts_list)
-            elif event.ui_element == ui_dict["shirt_right"]:
+            elif event.ui_element == ui_dict.get("shirt_right"):
                 active_shirt_index = (active_shirt_index + 1) % len(owns_shirts_list)
-            elif event.ui_element == ui_dict["room_left"]:
+            elif event.ui_element == ui_dict.get("room_left"):
                 active_room_index = (active_room_index - 1) % len(owns_room_list)
-            elif event.ui_element == ui_dict["room_right"]:
+            elif event.ui_element == ui_dict.get("room_right"):
                 active_room_index = (active_room_index + 1) % len(owns_room_list)
-            elif event.ui_element == ui_dict["theme_left"]:
+            elif event.ui_element == ui_dict.get("theme_left"):
                 active_theme_index = (active_theme_index - 1) % len(owns_themes)
-            elif event.ui_element == ui_dict["theme_right"]:
+            elif event.ui_element == ui_dict.get("theme_right"):
                 active_theme_index = (active_theme_index + 1) % len(owns_themes)
             elif text == "save":
                 save_profile()

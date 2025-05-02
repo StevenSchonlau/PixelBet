@@ -1,30 +1,30 @@
+import os
 import pygame
 import pygame_gui
-import os
-from pygame.locals import *
-from constants import screen_width, screen_height, FPS, BLACK, THEME_PATH
-from home import draw_home_screen, initialize_home
-from game import draw_game_screen, initialize_game
-from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward, clear_user
-from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
-from confirmEmail import initialize_confirming, draw_confirming_screen
-from passwordReset import initialize_password_reset, draw_password_reset_screen
-from profileView import draw_view_profile, init_profile_view
-from crypto import initialize_crypto, draw_crypto_screen
-from underDev import initialize_underDev, draw_underDev_screen
-from friendsList import init_friends_page, draw_friends_page
-from leaderboard import draw_leaderboard_page, init_leaderboard_page
-from dailyLogin import draw_popup, initialize_popup
-from musicShop import draw_music_shop, initialize_music_shop, play_music
-from shirtShop import draw_shirt_shop, initialize_shirt_shop
-from roomShop import draw_room_shop, initialize_room_shop
-from themeShop import draw_theme_shop, initialize_theme_shop
-from lottery import initialize_lottery, draw_lottery_screen
-from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
-from notifications import initialize_notification, draw_notification
-from timeLimits import initialize_time_limit, draw_time_limit, process_time_limit, init_time_limit, initialize_time_limit_reached, draw_time_limit_reached, reset_time
-from settings import initialize_settings, draw_settings_screen, is_resolution_set, fetch_user_resolution, set_resolution_marker, is_button_sound_enabled
 import multipleGames
+from pygame.locals import *
+from game import draw_game_screen, initialize_game
+from home import draw_home_screen, initialize_home
+from dailyLogin import draw_popup, initialize_popup
+from crypto import initialize_crypto, draw_crypto_screen
+from roomShop import draw_room_shop, initialize_room_shop
+from lottery import initialize_lottery, draw_lottery_screen
+from friendsList import init_friends_page, draw_friends_page
+from profileView import draw_view_profile, init_profile_view
+from shirtShop import draw_shirt_shop, initialize_shirt_shop
+from themeShop import draw_theme_shop, initialize_theme_shop
+from underDev import initialize_underDev, draw_underDev_screen
+from leaderboard import draw_leaderboard_page, init_leaderboard_page
+from notifications import initialize_notification, draw_notification
+from confirmEmail import initialize_confirming, draw_confirming_screen
+from musicShop import draw_music_shop, initialize_music_shop, play_music
+from constants import screen_width, screen_height, FPS, BLACK, THEME_PATH
+from passwordReset import initialize_password_reset, draw_password_reset_screen
+from achievements import initialize_achievement_popup, draw_achievement_popup, get_ach_popup, GLOBAL_ACHIEVEMENTS
+from signup import draw_signup_screen, initialize_signup, get_sign_up_success, get_back_to_login, set_back_to_login, get_confirming, set_confirming
+from settings import initialize_settings, draw_settings_screen, is_resolution_set, fetch_user_resolution, set_resolution_marker, is_button_sound_enabled
+from timeLimits import initialize_time_limit, draw_time_limit, process_time_limit, init_time_limit, initialize_time_limit_reached, draw_time_limit_reached, reset_time
+from login import draw_login_screen, initialize_login, get_user, get_sign_up, set_sign_up, set_password_reset, get_password_reset, get_login_reward, set_login_reward, clear_user
 
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
